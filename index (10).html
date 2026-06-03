@@ -1,0 +1,2683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src 'self' https: http: data: blob:; connect-src 'self' https:; font-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:;">
+<title>First Holding — Maintenance OS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+  /* Palette — First Holding: navy, grey, white, black */
+  --bg:         #f0f2f5;
+  --surface:    #ffffff;
+  --surface2:   #f5f7fa;
+  --border:     #dde1e9;
+  --border2:    #c8cdd8;
+
+  --accent:     #1e3a5f;   /* dark navy — primary CTA */
+  --accent-lt:  #e3eaf3;   /* light navy tint */
+  --accent2:    #2d5a9e;   /* mid navy */
+  --accent2-lt: #e8eef8;
+  --gold:       #c9a96e;   /* warm gold — kept for high priority */
+  --gold-lt:    #faf3e8;
+  --sky:        #3b6cb7;   /* navy blue */
+  --sky-lt:     #e3eaf3;
+
+  --danger:     #c0392b;
+  --danger-lt:  #fdf0ef;
+  --success:    #1e7a4e;
+  --success-lt: #e8f5ee;
+  --warn:       #c9a96e;
+  --warn-lt:    #faf3e8;
+
+  --dan:        #2d5a9e;   /* mid navy for Dan */
+  --dan-lt:     #e8eef8;
+  --skender:    #c9a96e;   /* gold for Skender */
+  --skender-lt: #faf3e8;
+
+  --text:       #111827;
+  --text2:      #4b5563;
+  --text3:      #9ca3af;
+
+  --radius:     12px;
+  --radius-sm:  8px;
+  --radius-lg:  16px;
+
+  --font:       'DM Sans', sans-serif;
+  --font-serif: 'DM Serif Display', serif;
+  --font-mono:  'DM Mono', monospace;
+
+  --shadow-sm:  0 1px 3px rgba(17,24,39,.07), 0 1px 2px rgba(17,24,39,.05);
+  --shadow:     0 4px 16px rgba(17,24,39,.09), 0 1px 4px rgba(17,24,39,.05);
+  --shadow-lg:  0 12px 40px rgba(17,24,39,.13), 0 4px 12px rgba(17,24,39,.07);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ─────────────────────────────────────────── */
+header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-sm);
+}
+.logo{
+  font-family:var(--font-serif);
+  font-size:18px;
+  color:var(--text);
+  letter-spacing:-.01em;
+}
+.logo span{
+  font-family:var(--font);
+  font-size:12px;
+  font-weight:400;
+  color:var(--text3);
+  margin-left:8px;
+  letter-spacing:.02em;
+}
+.hstats{display:flex;gap:20px;align-items:center;}
+.hstat{font-size:12px;color:var(--text2);}
+.hstat strong{color:var(--text);font-weight:600;}
+
+/* ── TABS ────────────────────────────────────────────── */
+.tabs{
+  display:flex;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  padding:0 28px;
+  overflow-x:auto;
+  gap:2px;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{
+  padding:14px 16px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text2);
+  cursor:pointer;
+  border:none;
+  border-bottom:2px solid transparent;
+  background:none;
+  white-space:nowrap;
+  transition:all .2s;
+  letter-spacing:.01em;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+
+/* ── LAYOUT ──────────────────────────────────────────── */
+.main{padding:28px;max-width:1340px;margin:0 auto;}
+.panel{display:none;animation:fadeUp .25s ease both;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:800px){.two-col,.three-col{grid-template-columns:1fr;}}
+
+/* ── CARDS ───────────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:22px 24px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow-sm);
+}
+.card-title{
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── FORMS ───────────────────────────────────────────── */
+.form-row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+.fg.wide{flex:2;min-width:220px;}
+label{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text2);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+input,select,textarea{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:13px;
+  padding:9px 12px;
+  outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  width:100%;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(30,58,95,.12);
+}
+textarea{resize:vertical;min-height:60px;}
+select option{background:var(--surface);}
+
+/* ── BUTTONS ─────────────────────────────────────────── */
+.btn{
+  padding:9px 18px;
+  border-radius:var(--radius-sm);
+  font-size:12px;
+  font-weight:600;
+  font-family:var(--font);
+  letter-spacing:.02em;
+  cursor:pointer;
+  border:none;
+  transition:all .2s;
+}
+.btn-primary{
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 2px 8px rgba(30,58,95,.25);
+}
+.btn-primary:hover{background:#162d4a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,95,.3);}
+.btn-secondary{
+  background:var(--surface2);
+  color:var(--text);
+  border:1px solid var(--border2);
+}
+.btn-secondary:hover{border-color:var(--text3);background:var(--border);}
+.btn-danger{
+  background:transparent;
+  color:var(--danger);
+  border:1px solid rgba(30,58,95,.3);
+  font-size:11px;
+  padding:5px 10px;
+  border-radius:var(--radius-sm);
+}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-ghost{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(30,58,95,.3);
+}
+.btn-ghost:hover{border-color:var(--accent);background:var(--accent-lt);}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ── BADGES ──────────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 8px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.badge-urgent{background:var(--danger-lt);color:var(--danger);}
+.badge-high{background:var(--gold-lt);color:var(--gold);}
+.badge-routine{background:var(--border2);color:var(--text);}
+.badge-followup{background:var(--warn-lt);color:var(--warn);}
+.badge-recurring{background:var(--success-lt);color:var(--success);}
+
+.cluster-badge{
+  display:inline-flex;align-items:center;
+  padding:2px 8px;border-radius:20px;
+  font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+}
+.cluster-plymouth{background:var(--success-lt);color:var(--success);}
+.cluster-ferndale{background:var(--sky-lt);color:var(--sky);}
+.cluster-westbloom{background:var(--gold-lt);color:var(--gold);}
+.cluster-outer{background:var(--skender-lt);color:var(--skender);}
+
+/* ── TASK ITEMS ──────────────────────────────────────── */
+.task-item{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  margin-bottom:10px;
+  display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;
+  transition:all .2s;
+  box-shadow:var(--shadow-sm);
+}
+.task-item:hover{border-color:var(--accent);box-shadow:var(--shadow);}
+.task-item.urgent{border-left:3px solid var(--danger);}
+.task-item.high{border-left:3px solid var(--gold);}
+.task-item.routine{border-left:3px solid #c5bdb4;opacity:1;}
+.task-item.assigned{}
+.task-item.done{opacity:.3;}
+.task-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px;}
+.task-prop{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;}
+.task-desc{font-size:13.5px;color:var(--text);margin-bottom:4px;font-weight:500;line-height:1.45;}
+.task-notes{font-size:12px;color:var(--text2);font-style:italic;margin-bottom:4px;}
+.task-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;}
+.task-time{font-size:11px;color:var(--sky);font-weight:500;}
+.task-dur{font-size:11px;color:var(--text3);}
+.task-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:flex-start;}
+.assigned-to{
+  font-size:10px;font-weight:600;padding:3px 8px;
+  border-radius:20px;text-transform:uppercase;letter-spacing:.04em;
+}
+.assigned-dan{background:var(--dan-lt);color:var(--dan);}
+.assigned-skender{background:var(--skender-lt);color:var(--skender);}
+
+/* ── INLINE ASSIGN SELECT ─────────────────────────────── */
+.assign-select{
+  font-size:10px;font-weight:600;padding:4px 8px;
+  border-radius:20px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);
+  cursor:pointer;font-family:var(--font);
+  transition:all .2s;min-width:90px;
+}
+.assign-select:focus{outline:none;border-color:var(--accent);}
+.assign-select.assign-dan{background:var(--dan-lt);color:var(--dan);border-color:rgba(45,90,158,.4);}
+.assign-select.assign-skender{background:var(--skender-lt);color:var(--skender);border-color:rgba(201,169,110,.4);}
+
+
+.field-note{
+  background:var(--success-lt);
+  border:1px solid rgba(122,158,142,.2);
+  border-radius:var(--radius-sm);
+  padding:8px 12px;margin-top:8px;font-size:12px;color:#4a8070;
+}
+.field-note-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--success);margin-bottom:3px;font-weight:600;}
+.field-note-input{width:100%;background:var(--surface);border:1px solid rgba(122,158,142,.25);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:6px 8px;font-family:var(--font);}
+.field-note-input:focus{outline:none;border-color:var(--success);}
+
+/* ── PHOTOS ──────────────────────────────────────────── */
+.photo-drop{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:14px 16px;background:var(--surface2);cursor:pointer;transition:all .2s;text-align:center;}
+.photo-drop:hover,.photo-drop.drag-over{border-color:var(--accent);background:var(--accent-lt);}
+.photo-drop input[type=file]{display:none;}
+.photo-drop-lbl{font-size:12px;color:var(--text3);}
+.photo-drop-lbl span{color:var(--accent);font-weight:500;}
+.photo-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.photo-wrap{position:relative;width:60px;height:60px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);flex-shrink:0;}
+.photo-wrap img{width:100%;height:100%;object-fit:cover;cursor:pointer;}
+.photo-rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:4px;font-size:10px;cursor:pointer;padding:1px 4px;}
+.photo-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:var(--accent-lt);color:var(--accent);}
+.task-photos{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.task-thumb{width:52px;height:52px;border-radius:var(--radius-sm);object-fit:cover;border:1px solid var(--border);cursor:pointer;transition:opacity .15s;}
+.task-thumb:hover{opacity:.8;}
+
+/* ── LIGHTBOX ────────────────────────────────────────── */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(45,37,32,.92);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:var(--radius);object-fit:contain;}
+.lb-close{position:absolute;top:20px;right:24px;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.6;}
+.lb-close:hover{opacity:1;}
+.lb-nav{display:flex;gap:14px;align-items:center;}
+.lb-nav button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12px;padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;}
+.lb-cap{font-size:12px;color:rgba(255,255,255,.5);}
+
+/* ── DAILY LISTS / GENERATE ──────────────────────────── */
+.tech-header{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.tech-dot{width:10px;height:10px;border-radius:50%;}
+.tech-dot.dan{background:var(--dan);}.tech-dot.skender{background:var(--skender);}
+.tech-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
+.tech-name.dan{color:var(--dan);}.tech-name.skender{color:var(--skender);}
+.tech-profile{font-size:12px;color:var(--text3);font-style:italic;margin-bottom:14px;padding-left:20px;}
+.travel-alert{border-radius:var(--radius-sm);padding:9px 13px;margin-bottom:10px;font-size:12px;display:none;}
+.travel-warn{background:var(--danger-lt);border:1px solid rgba(192,57,43,.2);color:var(--danger);}
+.travel-ok{background:var(--success-lt);border:1px solid rgba(122,158,142,.2);color:var(--success);}
+.day-queue{min-height:50px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:8px;margin-bottom:10px;}
+.dq-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);margin-bottom:5px;gap:8px;}
+.dq-left{flex:1;}
+.dq-prop{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px;}
+.empty-q{color:var(--text3);font-size:12px;font-style:italic;padding:6px 4px;}
+.cb-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background .15s;}
+.cb-item:hover{background:var(--surface2);}
+.cb-item input[type=checkbox]{width:15px;height:15px;min-width:15px;margin-top:2px;accent-color:var(--accent);}
+.cb-item label{cursor:pointer;line-height:1.45;font-size:12.5px;}
+.cg-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin:12px 0 4px;padding-left:10px;}
+.output-area{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:18px;font-family:var(--font-mono);font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);min-height:180px;margin-top:10px;}
+.tab-pills{display:flex;gap:6px;background:var(--surface2);border-radius:var(--radius-sm);padding:4px;}
+.tab-pill{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:none;border:none;color:var(--text2);transition:all .2s;text-transform:uppercase;letter-spacing:.03em;}
+.tab-pill.active.dan{background:var(--dan);color:#fff;}
+.tab-pill.active.skender{background:var(--skender);color:#fff;}
+.fit-dan{color:var(--dan);font-size:10px;font-weight:600;margin-left:4px;}
+.fit-skender{color:var(--skender);font-size:10px;font-weight:600;margin-left:4px;}
+
+/* ── FILTER BAR ──────────────────────────────────────── */
+.filter-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+.filter-row select,.filter-row input{width:auto;min-width:110px;flex:1;}
+
+/* ── DASHBOARD ───────────────────────────────────────── */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:22px;}
+.dash-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:18px 20px;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:var(--shadow-sm);
+}
+.dash-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+.dash-num{font-family:var(--font-serif);font-size:36px;color:var(--text);line-height:1;margin-bottom:4px;}
+.dash-label{font-size:12px;font-weight:500;color:var(--text2);}
+.dash-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.dash-hint{font-size:10px;color:var(--text3);margin-top:8px;opacity:0;transition:opacity .2s;}
+.dash-card:hover .dash-hint{opacity:1;}
+.prop-activity{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.prop-bar-wrap{flex:1;height:3px;background:var(--border2);border-radius:2px;margin:0 14px;}
+.prop-bar{height:3px;background:var(--accent);border-radius:2px;transition:width .5s;}
+.overdue-item{background:var(--danger-lt);border:1px solid rgba(192,57,43,.2);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:6px;font-size:12px;}
+
+/* ── TEMPLATES ───────────────────────────────────────── */
+.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.tpl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-sm);}
+.tpl-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px);}
+.tpl-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.tpl-prop{font-size:10px;color:var(--accent);text-transform:uppercase;font-weight:600;letter-spacing:.04em;}
+.tpl-meta{font-size:11px;color:var(--text2);margin-top:4px;}
+.season-btn{padding:14px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .2s;text-align:left;box-shadow:var(--shadow-sm);}
+.season-btn:hover{border-color:var(--accent);background:var(--accent-lt);transform:translateY(-1px);box-shadow:var(--shadow);}
+.season-icon{font-size:20px;margin-bottom:6px;display:block;}
+
+/* ── PROPERTIES ──────────────────────────────────────── */
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.prop-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);}
+.prop-code{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:3px;letter-spacing:.05em;text-transform:uppercase;}
+.prop-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.prop-addr{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.cl-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.cl-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);}
+.cl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cl-dot.plymouth{background:var(--success);}.cl-dot.ferndale{background:var(--sky);}.cl-dot.westbloom{background:var(--gold);}.cl-dot.outer{background:var(--skender);}
+
+/* ── MISC ────────────────────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.sec-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px;}
+.empty-state .icon{font-size:32px;margin-bottom:10px;}
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--text);color:var(--surface);
+  padding:11px 20px;border-radius:var(--radius);
+  font-size:12px;font-weight:500;z-index:999;
+  opacity:0;transform:translateY(8px);
+  transition:all .25s;pointer-events:none;
+  box-shadow:var(--shadow-lg);
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.date-row{display:flex;gap:12px;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(45,37,32,.5);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:28px;
+  width:min(500px,95vw);max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+}
+.modal-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);margin-bottom:18px;}
+
+/* ── SMART ASSIGNMENT BANNER ─────────────────────────── */
+.rec-banner{display:none;align-items:center;gap:12px;flex-wrap:wrap;background:var(--accent-lt);border:1px solid rgba(30,58,95,.2);border-radius:var(--radius);padding:11px 16px;margin-bottom:12px;}
+.rec-banner.show{display:flex;}
+.rec-label{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;}
+.rec-name{font-size:13px;font-weight:700;}
+.rec-name.dan{color:var(--dan);}
+.rec-name.skender{color:var(--skender);}
+.rec-reason{font-size:12px;color:var(--text2);font-style:italic;flex:1;}
+.rec-actions{display:flex;gap:6px;margin-left:auto;}
+.rec-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid;transition:all .2s;text-transform:uppercase;letter-spacing:.04em;}
+.rec-btn.accept-dan{border-color:rgba(45,90,158,.4);color:var(--dan);background:var(--dan-lt);}
+.rec-btn.accept-dan:hover{background:var(--dan);color:#fff;}
+.rec-btn.accept-skender{border-color:rgba(201,169,110,.4);color:var(--skender);background:var(--skender-lt);}
+.rec-btn.accept-skender:hover{background:var(--skender);color:#fff;}
+.rec-btn.override{border-color:var(--border2);color:var(--text2);background:transparent;}
+.rec-btn.override:hover{border-color:var(--text2);color:var(--text);}
+.rec-accepted{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;}
+.rec-accepted.dan{background:var(--dan-lt);color:var(--dan);}
+.rec-accepted.skender{background:var(--skender-lt);color:var(--skender);}
+.rec-conf-high{border-left:3px solid var(--accent);}
+.rec-conf-medium{border-left:3px solid var(--border2);}
+
+/* ── BRIEFING CARD ───────────────────────────────────── */
+.briefing-card{
+  background:linear-gradient(135deg,var(--accent-lt) 0%,var(--surface) 70%);
+  border:1px solid rgba(30,58,95,.15);
+  border-radius:var(--border-radius-lg);
+  padding:20px 24px;margin-bottom:22px;
+  box-shadow:var(--shadow-sm);
+}
+.briefing-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.briefing-title{font-family:var(--font-serif);font-size:17px;color:var(--text);letter-spacing:-.01em;}
+.briefing-date{font-size:11px;color:var(--text3);}
+.briefing-items{display:flex;flex-direction:column;gap:8px;}
+.briefing-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:11px 14px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+.briefing-item.critical{border-left:3px solid var(--danger);}
+.briefing-item.warning{border-left:3px solid var(--warn);}
+.briefing-item.info{border-left:3px solid var(--sky);}
+.briefing-item.good{border-left:3px solid var(--success);}
+.briefing-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.briefing-text{flex:1;}
+.briefing-main{font-size:13px;color:var(--text);line-height:1.45;margin-bottom:2px;font-weight:500;}
+.briefing-sub{font-size:11px;color:var(--text2);}
+.briefing-action{font-size:11px;font-weight:600;color:var(--accent);cursor:pointer;border:none;background:none;padding:0;text-decoration:underline;text-underline-offset:2px;}
+.briefing-action:hover{color:#162d4a;}
+.briefing-all-good{text-align:center;padding:20px;color:var(--text2);font-size:13px;}
+.briefing-all-good .big-icon{font-size:30px;margin-bottom:8px;}
+
+/* ── CLICKABLE DASH CARDS ────────────────────────────── */
+.dash-card:hover .dash-hint{opacity:1;}
+
+/* ── TASK MODAL ──────────────────────────────────────── */
+.task-modal-overlay{display:none;position:fixed;inset:0;background:rgba(45,37,32,.5);backdrop-filter:blur(4px);z-index:400;align-items:flex-start;justify-content:center;padding-top:60px;}
+.task-modal-overlay.open{display:flex;}
+.task-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:min(700px,95vw);max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);}
+.task-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.task-modal-title{font-family:var(--font-serif);font-size:16px;color:var(--text);}
+.task-modal-count{font-size:12px;color:var(--text3);margin-left:8px;}
+.task-modal-body{padding:18px 24px;}
+.task-modal-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;line-height:1;padding:0 4px;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.task-modal-close:hover{background:var(--surface2);color:var(--text);}
+
+/* ── QUICK COMPLETE ──────────────────────────────────── */
+.btn-quick-done{
+  background:transparent;
+  border:1.5px solid rgba(122,158,142,.4);
+  color:var(--success);
+  border-radius:var(--radius-sm);
+  font-size:14px;padding:6px 10px;
+  cursor:pointer;transition:all .2s;font-weight:700;
+}
+.btn-quick-done:hover{background:var(--success);color:#fff;border-color:var(--success);}
+
+/* ── MAP ─────────────────────────────────────────────── */
+.map-container{width:100%;height:500px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--surface2);}
+.map-pin-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+.map-legend-dot{width:10px;height:10px;border-radius:50%;}
+
+/* ── KEYBOARD HINT ───────────────────────────────────── */
+.shortcut-hint{font-size:10px;color:var(--text3);margin-left:8px;}
+
+/* ── POLISH ──────────────────────────────────────────── */
+.task-item{transition:all .2s;}
+.tab{transition:all .2s;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">First Holding <span>Maintenance OS</span></div>
+  <div class="hstats">
+    <div class="hstat">Queue: <strong id="s-queue">0</strong></div>
+    <div class="hstat">Urgent: <strong id="s-urgent">0</strong></div>
+    <div class="hstat">Follow-ups: <strong id="s-followup">0</strong></div>
+    <div class="hstat">Done: <strong id="s-done">0</strong></div>
+    <div class="hstat"><span id="sync-status" style="font-family:var(--font-mono);font-size:11px;color:#888;">○ Connecting...</span></div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn btn-secondary btn-sm" onclick="exportData()" title="Export all data as JSON backup">⬇ Backup</button>
+    <button class="btn btn-secondary btn-sm" onclick="importData()" title="Restore from a JSON backup file">⬆ Restore</button>
+    <button class="btn btn-danger" style="font-size:10px;padding:4px 8px;" onclick="clearAllData()" title="Clear all data">✕ Clear</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('dashboard',this)">Dashboard</button>
+  <button class="tab" onclick="showPanel('queue',this)">Task Queue</button>
+  <button class="tab" onclick="showPanel('tasks',this)">Tasks</button>
+  <button class="tab" onclick="showPanel('generate',this)">Daily Lists</button>
+  <button class="tab" onclick="showPanel('templates',this)">Templates</button>
+  <button class="tab" onclick="showPanel('recurring',this)">Recurring</button>
+  <button class="tab" onclick="showPanel('properties',this)">Properties</button>
+  <button class="tab" onclick="showPanel('map',this)">🗺 Map</button>
+  <button class="tab" onclick="showPanel('history',this)">History</button>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+<div class="panel active" id="panel-dashboard">
+
+  <!-- TODAY'S BRIEFING -->
+  <div class="briefing-card">
+    <div class="briefing-header">
+      <span class="briefing-title">✦ Today's Briefing</span>
+      <span class="briefing-date" id="briefing-date"></span>
+    </div>
+    <div class="briefing-items" id="briefing-items">
+      <div class="briefing-all-good"><div class="big-icon">📋</div>Loading briefing...</div>
+    </div>
+  </div>
+
+  <div class="dash-grid" id="dash-stats">
+    <div class="dash-card"><div class="dash-num">0</div><div class="dash-label">Pending Tasks</div><div class="dash-sub">0 urgent</div></div>
+    <div class="dash-card"><div class="dash-num" style="color:var(--danger)">0</div><div class="dash-label">Overdue</div><div class="dash-sub">past due date</div></div>
+    <div class="dash-card"><div class="dash-num" style="color:var(--warn)">0</div><div class="dash-label">Follow-ups</div><div class="dash-sub">need attention</div></div>
+    <div class="dash-card"><div class="dash-num" style="color:var(--success)">0</div><div class="dash-label">Completed</div><div class="dash-sub">all time</div></div>
+    <div class="dash-card"><div class="dash-num" style="color:var(--accent2)">0</div><div class="dash-label">Assigned</div><div class="dash-sub">in progress</div></div>
+    <div class="dash-card"><div class="dash-num">0</div><div class="dash-label">Recurring</div><div class="dash-sub">0 due now</div></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-title">Overdue / Past-Due Tasks</div>
+        <div id="dash-overdue"><div style="color:var(--text3);font-size:12px;font-style:italic;">No overdue tasks.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Follow-Up Required</div>
+        <div id="dash-followups"><div style="color:var(--text3);font-size:12px;font-style:italic;">No follow-ups pending.</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">Activity by Property</div>
+        <div id="dash-props"><div style="color:var(--text3);font-size:12px;font-style:italic;">No activity yet.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Tech Summary</div>
+    <div class="two-col" id="dash-techs">
+    <div class="dash-card" style="border-color:rgba(91,143,255,.3);">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--dan);margin-bottom:10px;">Dan</div>
+      <div style="font-size:12px;color:var(--text2);">Completed: <strong style="color:var(--text)">0</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">In progress: <strong style="color:var(--text)">0</strong></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">Larger repairs · skilled installs</div>
+    </div>
+    <div class="dash-card" style="border-color:rgba(232,131,77,.3);">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--skender);margin-bottom:10px;">Skender</div>
+      <div style="font-size:12px;color:var(--text2);">Completed: <strong style="color:var(--text)">0</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">In progress: <strong style="color:var(--text)">0</strong></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">Routine checks · inspections</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ QUEUE ═══════════════════════ -->
+<div class="panel" id="panel-queue">
+  <div class="card">
+    <div class="card-title">Add Task
+      <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="openTemplateModal()">Use Template</button>
+    </div>
+    <div class="form-row">
+      <div class="fg wide"><label>Description</label><input type="text" id="t-desc" placeholder="e.g. Caulk kitchen holes – ants getting in" oninput="updateRecBanner()"></div>
+      <div class="fg"><label>Property</label><select id="t-prop"><option value="">— Select —</option><optgroup label="● Plymouth / Ann Arbor"><option value="DAI">DAI — Daisy District</option><option value="GRN">GRN — Green Road (2000 Green)</option><option value="HLD">HLD — Highland Lakes</option><option value="PGD">PGD — Plymouth Green District</option><option value="PLY">PLY — Plymouth Square</option></optgroup><optgroup label="● Ferndale / Pleasant Ridge"><option value="IRO">IRO — Iron Ridge District</option><option value="MIN">MIN — Minerva</option><option value="LMC">LMC — Landmark Church</option></optgroup><optgroup label="● West Bloomfield / Southfield"><option value="11G">11G — 11 Mile &amp; Greenfield</option><option value="ORM">ORM — Orchard Mall</option><option value="WBCC">WBCC — West Bloomfield Corporate Center</option></optgroup><optgroup label="● Outer Ring"><option value="DEN">DEN — Dennis Industrial</option><option value="HSQ">HSQ — Harvard Square</option><option value="ROC">ROC — Winchester District</option><option value="WAT">WAT — Waterford Plaza</option></optgroup></select></div>
+      <div class="fg"><label>Sub-location / Tenant</label><input type="text" id="t-sub" placeholder="e.g. MI Glaucoma, Unit 3455"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg wide"><label>Notes / Context</label><textarea id="t-notes" placeholder="Contacts, access instructions, context..."></textarea></div>
+      <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:170px;">
+        <div class="fg"><label>Priority</label>
+          <select id="t-priority"><option value="urgent">🔴 Urgent</option><option value="high">🟡 High</option><option value="routine" selected="">⚪ Routine</option></select>
+        </div>
+        <div class="fg"><label>Est. Duration</label>
+          <select id="t-dur"><option value="">Unknown</option><option value="15 min">15 min</option><option value="30 min">30 min</option><option value="1 hr">1 hr</option><option value="2 hr">2 hr</option><option value="Half day">Half day</option><option value="Full day">Full day</option></select>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:170px;">
+        <div class="fg"><label>Required Date</label><input type="date" id="t-date"></div>
+        <div class="fg"><label>Appt Time</label><input type="time" id="t-time"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Follow-up?</label>
+        <select id="t-followup"><option value="">No follow-up</option><option value="yes">Flag for follow-up</option></select>
+      </div>
+      <div class="fg wide">
+        <label>Photos (optional)</label>
+        <div class="photo-drop" id="photo-drop" onclick="document.getElementById(&#39;pf-input&#39;).click()" ondragenter="event.preventDefault();this.classList.add(&#39;drag-over&#39;)" ondragover="event.preventDefault();this.classList.add(&#39;drag-over&#39;)" ondragleave="this.classList.remove(&#39;drag-over&#39;)" ondrop="handleDrop(event)">
+          <input type="file" id="pf-input" multiple="" accept="image/*" onchange="handlePhotoFiles(this.files)">
+          <div class="photo-drop-lbl">📎 <span>Click to attach</span> or drag &amp; drop</div>
+          <div class="photo-strip" id="photo-strip"></div>
+        </div>
+      </div>
+    </div>
+    <!-- SMART ASSIGNMENT BANNER -->
+    <div class="rec-banner" id="rec-banner">
+      <span class="rec-label">Suggested →</span>
+      <span class="rec-name" id="rec-tech-name"></span>
+      <span class="rec-reason" id="rec-reason"></span>
+      <div class="rec-actions" id="rec-actions"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+      <button class="btn btn-primary" onclick="addTask()">+ Add to Queue</button>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <select id="f-priority" onchange="renderQueue()"><option value="">All Priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="routine">Routine</option></select>
+    <select id="f-cluster" onchange="renderQueue()"><option value="">All Areas</option><option value="plymouth">Plymouth / Ann Arbor</option><option value="ferndale">Ferndale / Pleasant Ridge</option><option value="westbloom">West Bloomfield / Southfield</option><option value="outer">Outer Ring</option></select>
+    <input type="text" id="f-search" placeholder="Search..." oninput="renderQueue()" style="min-width:160px;">
+    <select id="f-status" onchange="renderQueue()"><option value="all">All Tasks</option><option value="pending">Pending</option><option value="assigned">Assigned</option><option value="followup">Follow-up flagged</option></select>
+  </div>
+  <div id="queue-list"><div class="empty-state"><div class="icon">📋</div>No tasks match this filter.</div></div>
+</div>
+
+<!-- ═══════════════════════ TASKS (ACTIVE ONLY) ═══════════════════════ -->
+<div class="panel" id="panel-tasks">
+  <div class="card">
+    <div class="card-title">Active Tasks
+      <span id="tasks-count" style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-left:6px;"></span>
+    </div>
+    <div class="filter-row">
+      <select id="at-priority" onchange="renderActiveTasks()"><option value="">All Priorities</option><option value="urgent">🔴 Urgent</option><option value="high">🟡 High</option><option value="routine">⚪ Routine</option></select>
+      <select id="at-cluster" onchange="renderActiveTasks()"><option value="">All Areas</option><option value="plymouth">Plymouth / Ann Arbor</option><option value="ferndale">Ferndale / Pleasant Ridge</option><option value="westbloom">West Bloomfield / Southfield</option><option value="outer">Outer Ring</option></select>
+      <select id="at-tech" onchange="renderActiveTasks()"><option value="">All Techs</option><option value="dan">Dan</option><option value="skender">Skender</option><option value="unassigned">Unassigned</option></select>
+      <input type="text" id="at-search" placeholder="Search tasks..." oninput="renderActiveTasks()" style="min-width:160px;">
+    </div>
+    <div id="active-tasks-list"><div class="empty-state"><div class="icon">📋</div>No active tasks.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ DAILY LISTS ═══════════════════════ -->
+<div class="panel" id="panel-generate">
+  <div class="card">
+    <div class="card-title">Build Daily Lists</div>
+    <div class="date-row">
+      <div class="fg" style="flex:0 0 auto;"><label>List Date</label><input type="date" id="gen-date"></div>
+      <div class="fg" style="flex:1;max-width:320px;"><label>Opening line override</label><input type="text" id="gen-greeting" placeholder="Tomorrow can you please:"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="tech-header"><div class="tech-dot dan"></div><div class="tech-name dan">Dan</div></div>
+        <div class="tech-profile">Larger repairs · painting · skilled installs</div>
+        <div class="travel-alert travel-warn" id="warn-dan"></div>
+        <div class="travel-alert travel-ok" id="ok-dan"></div>
+        <div class="sec-label">Select tasks for Dan</div>
+        <div id="dan-select"></div>
+        <div class="divider"></div>
+        <div class="sec-label">Dan's list preview</div>
+        <div class="day-queue" id="dan-queue"></div>
+      </div>
+      <div>
+        <div class="tech-header"><div class="tech-dot skender"></div><div class="tech-name skender">Skender</div></div>
+        <div class="tech-profile">Routine checks · inspections · cleanups · light tasks</div>
+        <div class="travel-alert travel-warn" id="warn-skender"></div>
+        <div class="travel-alert travel-ok" id="ok-skender"></div>
+        <div class="sec-label">Select tasks for Skender</div>
+        <div id="skender-select"></div>
+        <div class="divider"></div>
+        <div class="sec-label">Skender's list preview</div>
+        <div class="day-queue" id="skender-queue"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="clearDayQueues()">Clear</button>
+      <button class="btn btn-ghost" id="auto-btn" onclick="autoSchedule()">✦ Auto-Schedule</button>
+      <button class="btn btn-primary" onclick="generateLists()">Generate Lists →</button>
+    </div>
+    <div style="font-size:10px;color:var(--text3);text-align:right;margin-top:6px;">✦ Auto-Schedule requires Claude.ai or a configured API proxy.</div>
+    <div id="ai-box" style="display:none;margin-top:14px;">
+      <div style="background:rgba(30,58,95,.04);border:1px solid rgba(30,58,95,.15);border-radius:var(--radius);padding:14px;">
+        <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">✦ Claude's Scheduling Notes</div>
+        <div id="ai-text" style="font-size:12px;color:var(--text2);line-height:1.7;"></div>
+      </div>
+    </div>
+  </div>
+  <div id="output-section" style="display:none;">
+    <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:16px;">
+      <div class="tab-pills">
+        <button class="tab-pill active dan" id="pill-dan" onclick="switchOutput(&#39;dan&#39;)">Dan</button>
+        <button class="tab-pill skender" id="pill-skender" onclick="switchOutput(&#39;skender&#39;)">Skender</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="copyOutput()">📋 Copy</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportPDF()">📄 Export PDF</button>
+      </div>
+    </div>
+    <div class="output-area" id="output-text"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TEMPLATES ═══════════════════════ -->
+<div class="panel" id="panel-templates">
+  <div class="card">
+    <div class="card-title">Seasonal Checklists — Load All at Once</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:8px;" id="season-btns">
+    <button class="season-btn" onclick="loadSeason(&#39;winter&#39;)">
+      <span class="season-icon">❄️</span>
+      <div style="font-size:13px;font-weight:600;">Winter Checklist</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">5 tasks — all properties</div>
+    </button>
+    <button class="season-btn" onclick="loadSeason(&#39;spring&#39;)">
+      <span class="season-icon">🌱</span>
+      <div style="font-size:13px;font-weight:600;">Spring Checklist</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">5 tasks — all properties</div>
+    </button>
+    <button class="season-btn" onclick="loadSeason(&#39;summer&#39;)">
+      <span class="season-icon">☀️</span>
+      <div style="font-size:13px;font-weight:600;">Summer Checklist</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">4 tasks — all properties</div>
+    </button>
+    <button class="season-btn" onclick="loadSeason(&#39;fall&#39;)">
+      <span class="season-icon">🍂</span>
+      <div style="font-size:13px;font-weight:600;">Fall Checklist</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">6 tasks — all properties</div>
+    </button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Task Templates
+      <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="openAddTemplate()">+ New Template</button>
+    </div>
+    <div class="template-grid" id="template-grid">
+    <div class="tpl-card" onclick="applyTemplate(&#39;tpl-1&#39;)">
+      <div class="tpl-name">General Property Check</div>
+      <div class="tpl-prop" style="color:var(--text3)">Any property</div>
+      <div class="tpl-meta">routine ·  30 min</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate(&#39;tpl-1&#39;)">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate(&#39;tpl-1&#39;)">✕</button>
+      </div>
+    </div>
+    <div class="tpl-card" onclick="applyTemplate(&#39;tpl-2&#39;)">
+      <div class="tpl-name">Vacancy Inspection</div>
+      <div class="tpl-prop" style="color:var(--text3)">Any property</div>
+      <div class="tpl-meta">routine ·  1 hr</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate(&#39;tpl-2&#39;)">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate(&#39;tpl-2&#39;)">✕</button>
+      </div>
+    </div>
+    <div class="tpl-card" onclick="applyTemplate(&#39;tpl-3&#39;)">
+      <div class="tpl-name">Light Audit — Exterior</div>
+      <div class="tpl-prop" style="color:var(--text3)">Any property</div>
+      <div class="tpl-meta">routine ·  30 min</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate(&#39;tpl-3&#39;)">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate(&#39;tpl-3&#39;)">✕</button>
+      </div>
+    </div>
+    <div class="tpl-card" onclick="applyTemplate(&#39;tpl-4&#39;)">
+      <div class="tpl-name">Bathroom Check</div>
+      <div class="tpl-prop" style="color:var(--text3)">Any property</div>
+      <div class="tpl-meta">routine ·  15 min</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate(&#39;tpl-4&#39;)">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate(&#39;tpl-4&#39;)">✕</button>
+      </div>
+    </div>
+    <div class="tpl-card" onclick="applyTemplate(&#39;tpl-5&#39;)">
+      <div class="tpl-name">Window Cleaning</div>
+      <div class="tpl-prop" style="color:var(--text3)">Any property</div>
+      <div class="tpl-meta">routine ·  2 hr</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate(&#39;tpl-5&#39;)">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate(&#39;tpl-5&#39;)">✕</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RECURRING ═══════════════════════ -->
+<div class="panel" id="panel-recurring">
+  <div class="card">
+    <div class="card-title">Add Recurring Task</div>
+    <div class="form-row">
+      <div class="fg wide"><label>Description</label><input type="text" id="r-desc" placeholder="e.g. Light audit – exterior/parking lot"></div>
+      <div class="fg"><label>Property</label><select id="r-prop"><option value="">— Select —</option><optgroup label="● Plymouth / Ann Arbor"><option value="DAI">DAI — Daisy District</option><option value="GRN">GRN — Green Road (2000 Green)</option><option value="HLD">HLD — Highland Lakes</option><option value="PGD">PGD — Plymouth Green District</option><option value="PLY">PLY — Plymouth Square</option></optgroup><optgroup label="● Ferndale / Pleasant Ridge"><option value="IRO">IRO — Iron Ridge District</option><option value="MIN">MIN — Minerva</option><option value="LMC">LMC — Landmark Church</option></optgroup><optgroup label="● West Bloomfield / Southfield"><option value="11G">11G — 11 Mile &amp; Greenfield</option><option value="ORM">ORM — Orchard Mall</option><option value="WBCC">WBCC — West Bloomfield Corporate Center</option></optgroup><optgroup label="● Outer Ring"><option value="DEN">DEN — Dennis Industrial</option><option value="HSQ">HSQ — Harvard Square</option><option value="ROC">ROC — Winchester District</option><option value="WAT">WAT — Waterford Plaza</option></optgroup></select></div>
+      <div class="fg"><label>Sub-location</label><input type="text" id="r-sub"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Notes</label><textarea id="r-notes" style="min-height:44px;"></textarea></div>
+      <div class="fg"><label>Priority</label>
+        <select id="r-priority"><option value="routine" selected="">⚪ Routine</option><option value="high">🟡 High</option></select>
+      </div>
+      <div class="fg"><label>Frequency</label>
+        <select id="r-freq"><option value="daily">Daily</option><option value="weekly" selected="">Weekly</option><option value="biweekly">Every 2 Weeks</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="seasonal">Seasonal (see templates)</option></select>
+      </div>
+      <div class="fg"><label>Next Due Date</label><input type="date" id="r-next"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="addRecurring()">+ Add Recurring Task</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Active Recurring Tasks</div>
+    <div id="recurring-list"><div class="empty-state"><div class="icon">🔁</div>No recurring tasks yet.</div></div>
+  </div>
+  <div class="card" style="border-color:rgba(232,197,71,.3);">
+    <div class="card-title">Due Now — Push to Queue</div>
+    <div id="recurring-due"></div>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="pushAllDue()">Push All Due → Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PROPERTIES ═══════════════════════ -->
+<div class="panel" id="panel-properties">
+  <div class="card">
+    <div class="card-title">Portfolio — 15 Properties</div>
+    <div class="cl-legend">
+      <div class="cl-item"><div class="cl-dot plymouth"></div>Plymouth / Ann Arbor</div>
+      <div class="cl-item"><div class="cl-dot ferndale"></div>Ferndale / Pleasant Ridge</div>
+      <div class="cl-item"><div class="cl-dot westbloom"></div>West Bloomfield / Southfield</div>
+      <div class="cl-item"><div class="cl-dot outer"></div>Outer Ring</div>
+    </div>
+    <div class="prop-grid" id="prop-grid"><div class="prop-card"><div class="prop-code">11G</div><div class="prop-name">11 Mile &amp; Greenfield</div><div class="prop-addr">15640 W. 11 Mile Rd / 27034-27065 Greenfield Rd, Southfield</div><span class="cluster-badge cluster-westbloom">West Bloomfield / Southfield</span></div><div class="prop-card"><div class="prop-code">DAI</div><div class="prop-name">Daisy District</div><div class="prop-addr">246-250 N. Main, Plymouth</div><span class="cluster-badge cluster-plymouth">Plymouth / Ann Arbor</span></div><div class="prop-card"><div class="prop-code">DEN</div><div class="prop-name">Dennis Industrial</div><div class="prop-addr">50200-50420 Dennis Court, Wixom</div><span class="cluster-badge cluster-outer">Outer Ring</span></div><div class="prop-card"><div class="prop-code">GRN</div><div class="prop-name">Green Road (2000 Green)</div><div class="prop-addr">2000 Green Road, Ann Arbor</div><span class="cluster-badge cluster-plymouth">Plymouth / Ann Arbor</span></div><div class="prop-card"><div class="prop-code">HSQ</div><div class="prop-name">Harvard Square</div><div class="prop-addr">44250/44300 Ford Rd &amp; 5800-6034 N. Sheldon Rd, Canton</div><span class="cluster-badge cluster-outer">Outer Ring</span></div><div class="prop-card"><div class="prop-code">IRO</div><div class="prop-name">Iron Ridge District</div><div class="prop-addr">404 E. 10 Mile, Pleasant Ridge / 660 E. 10 Mile, Ferndale</div><span class="cluster-badge cluster-ferndale">Ferndale / Pleasant Ridge</span></div><div class="prop-card"><div class="prop-code">HLD</div><div class="prop-name">Highland Lakes</div><div class="prop-addr">42925-43291 Seven Mile Road, Northville</div><span class="cluster-badge cluster-plymouth">Plymouth / Ann Arbor</span></div><div class="prop-card"><div class="prop-code">ORM</div><div class="prop-name">Orchard Mall</div><div class="prop-addr">6445 Orchard Lake Road, West Bloomfield</div><span class="cluster-badge cluster-westbloom">West Bloomfield / Southfield</span></div><div class="prop-card"><div class="prop-code">PGD</div><div class="prop-name">Plymouth Green District</div><div class="prop-addr">3389-3395 Plymouth Road, Ann Arbor</div><span class="cluster-badge cluster-plymouth">Plymouth / Ann Arbor</span></div><div class="prop-card"><div class="prop-code">PLY</div><div class="prop-name">Plymouth Square</div><div class="prop-addr">4441-73 / 44155-523 / 44427-525 Ann Arbor Road, Plymouth</div><span class="cluster-badge cluster-plymouth">Plymouth / Ann Arbor</span></div><div class="prop-card"><div class="prop-code">ROC</div><div class="prop-name">Winchester District</div><div class="prop-addr">1100 Rochester Road S., Rochester Hills</div><span class="cluster-badge cluster-outer">Outer Ring</span></div><div class="prop-card"><div class="prop-code">WAT</div><div class="prop-name">Waterford Plaza</div><div class="prop-addr">5038-5160 Highland Road, Waterford</div><span class="cluster-badge cluster-outer">Outer Ring</span></div><div class="prop-card"><div class="prop-code">WBCC</div><div class="prop-name">West Bloomfield Corporate Center</div><div class="prop-addr">6960 Orchard Lake Road, West Bloomfield</div><span class="cluster-badge cluster-westbloom">West Bloomfield / Southfield</span></div><div class="prop-card"><div class="prop-code">MIN</div><div class="prop-name">Minerva</div><div class="prop-addr">3040-3050 Minerva, Ferndale</div><span class="cluster-badge cluster-ferndale">Ferndale / Pleasant Ridge</span></div><div class="prop-card"><div class="prop-code">LMC</div><div class="prop-name">Landmark Church</div><div class="prop-addr">24520 N. Chrysler Drive, Hazel Park</div><span class="cluster-badge cluster-ferndale">Ferndale / Pleasant Ridge</span></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAP ═══════════════════════ -->
+<div class="panel" id="panel-map">
+  <div class="card">
+    <div class="card-title">Portfolio Map — 15 Properties</div>
+    <div class="map-pin-legend">
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--danger);"></div>Urgent tasks</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--warn);"></div>Pending tasks</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--sky);"></div>Assigned / in progress</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:var(--success);"></div>All clear</div>
+    </div>
+    <div id="map-container" style="height:560px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);z-index:0;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ HISTORY ═══════════════════════ -->
+<div class="panel" id="panel-history">
+  <div class="card">
+    <div class="card-title">Completed Tasks
+      <button class="btn btn-secondary btn-sm" style="margin-left:auto;" onclick="exportHistoryPDF()">📄 Export PDF</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TASK DRILL-DOWN MODAL -->
+<div class="task-modal-overlay" id="task-modal-overlay" onclick="if(event.target===this)closeTaskModal()">
+  <div class="task-modal">
+    <div class="task-modal-header">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="task-modal-title" id="task-modal-title">Tasks</span>
+        <span class="task-modal-count" id="task-modal-count"></span>
+      </div>
+      <button class="task-modal-close" onclick="closeTaskModal()">✕</button>
+    </div>
+    <div class="task-modal-body" id="task-modal-body"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLB()">
+  <button class="lb-close" onclick="closeLB()">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-nav">
+    <button onclick="lbNav(-1)">← Prev</button>
+    <span class="lb-cap" id="lb-cap"></span>
+    <button onclick="lbNav(1)">Next →</button>
+  </div>
+</div>
+
+<!-- TEMPLATE PICKER MODAL -->
+<div class="modal-overlay" id="tpl-modal" onclick="if(event.target===this)closeTplModal()">
+  <div class="modal">
+    <div class="modal-title">Choose a Template</div>
+    <div id="tpl-modal-list"></div>
+    <div style="margin-top:16px;text-align:right;"><button class="btn btn-secondary" onclick="closeTplModal()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ADD TEMPLATE MODAL -->
+<div class="modal-overlay" id="addtpl-modal" onclick="if(event.target===this)closeAddTemplate()">
+  <div class="modal">
+    <div class="modal-title">New Task Template</div>
+    <div class="form-row"><div class="fg wide"><label>Template Name</label><input type="text" id="atpl-name" placeholder="e.g. General Property Check"></div></div>
+    <div class="form-row">
+      <div class="fg"><label>Property (optional)</label><select id="atpl-prop"><option value="">Any</option><optgroup label="● Plymouth / Ann Arbor"><option value="DAI">DAI — Daisy District</option><option value="GRN">GRN — Green Road (2000 Green)</option><option value="HLD">HLD — Highland Lakes</option><option value="PGD">PGD — Plymouth Green District</option><option value="PLY">PLY — Plymouth Square</option></optgroup><optgroup label="● Ferndale / Pleasant Ridge"><option value="IRO">IRO — Iron Ridge District</option><option value="MIN">MIN — Minerva</option><option value="LMC">LMC — Landmark Church</option></optgroup><optgroup label="● West Bloomfield / Southfield"><option value="11G">11G — 11 Mile &amp; Greenfield</option><option value="ORM">ORM — Orchard Mall</option><option value="WBCC">WBCC — West Bloomfield Corporate Center</option></optgroup><optgroup label="● Outer Ring"><option value="DEN">DEN — Dennis Industrial</option><option value="HSQ">HSQ — Harvard Square</option><option value="ROC">ROC — Winchester District</option><option value="WAT">WAT — Waterford Plaza</option></optgroup></select></div>
+      <div class="fg"><label>Sub-location</label><input type="text" id="atpl-sub"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg wide"><label>Notes</label><textarea id="atpl-notes" style="min-height:50px;"></textarea></div>
+      <div class="fg"><label>Priority</label>
+        <select id="atpl-priority"><option value="routine" selected="">⚪ Routine</option><option value="high">🟡 High</option><option value="urgent">🔴 Urgent</option></select>
+      </div>
+      <div class="fg"><label>Duration</label>
+        <select id="atpl-dur"><option value="">Unknown</option><option value="15 min">15 min</option><option value="30 min">30 min</option><option value="1 hr">1 hr</option><option value="2 hr">2 hr</option><option value="Half day">Half day</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeAddTemplate()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT TASK MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal" style="width:min(760px,96vw);max-height:92vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="modal-title" style="margin-bottom:0;">Task Detail</div>
+      <button class="lb-close" style="position:static;font-size:20px;opacity:.4;" onclick="closeEditModal()">✕</button>
+    </div>
+    <input type="hidden" id="edit-id">
+
+    <!-- Photos gallery (read-only view at top) -->
+    <div id="edit-photo-gallery" style="display:none;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Photos</div>
+      <div id="edit-photo-grid" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="fg wide"><label>Description</label><input type="text" id="edit-desc" placeholder="Task description"></div>
+      <div class="fg"><label>Property</label><select id="edit-prop"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg wide"><label>Sub-location / Tenant</label><input type="text" id="edit-sub" placeholder="e.g. MI Glaucoma, Unit 3455"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg wide"><label>Notes / Context</label><textarea id="edit-notes" style="min-height:80px;" placeholder="Contacts, access instructions, context..."></textarea></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Priority</label>
+        <select id="edit-priority"><option value="urgent">🔴 Urgent</option><option value="high">🟡 High</option><option value="routine" selected>⚪ Routine</option></select>
+      </div>
+      <div class="fg"><label>Est. Duration</label>
+        <select id="edit-dur"><option value="">Unknown</option><option value="15 min">15 min</option><option value="30 min">30 min</option><option value="1 hr">1 hr</option><option value="2 hr">2 hr</option><option value="Half day">Half day</option><option value="Full day">Full day</option></select>
+      </div>
+      <div class="fg"><label>Required Date</label><input type="date" id="edit-date"></div>
+      <div class="fg"><label>Appt Time</label><input type="time" id="edit-time"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Follow-up?</label>
+        <select id="edit-followup"><option value="">No follow-up</option><option value="yes">Flag for follow-up</option></select>
+      </div>
+      <div class="fg"><label>Assign To</label>
+        <select id="edit-assign"><option value="">— Unassigned —</option><option value="dan">Dan</option><option value="skender">Skender</option></select>
+      </div>
+    </div>
+
+    <!-- Add more photos -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:8px;">Add / Replace Photos</label>
+      <div class="photo-drop" id="edit-photo-drop"
+        onclick="document.getElementById('edit-pf-input').click()"
+        ondragenter="event.preventDefault();this.classList.add('drag-over')"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleEditDrop(event)">
+        <input type="file" id="edit-pf-input" multiple accept="image/*" onchange="handleEditPhotoFiles(this.files)">
+        <div class="photo-drop-lbl">📎 <span>Click to attach</span> or drag &amp; drop</div>
+        <div class="photo-strip" id="edit-photo-strip"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIELD NOTE MODAL -->
+<div class="modal-overlay" id="fn-modal" onclick="if(event.target===this)closeFNModal()">
+  <div class="modal">
+    <div class="modal-title">Field Note from Tech</div>
+    <div class="fg" style="margin-bottom:14px;"><label>Note</label><textarea id="fn-text" style="min-height:80px;" placeholder="e.g. Done, needed 2 tubes of caulk. Found some water staining above drop ceiling — flagged."></textarea></div>
+    <div class="fg" style="margin-bottom:14px;"><label>Mark as</label>
+      <select id="fn-status"><option value="done">Completed ✓</option><option value="done-followup">Completed — needs follow-up</option><option value="pending">Still pending (partial)</option></select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeFNModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFN()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const PROPS = [
+  {code:'11G', name:'11 Mile & Greenfield',address:'15640 W. 11 Mile Rd / 27034-27065 Greenfield Rd, Southfield',cluster:'westbloom',lat:42.483,lng:-83.225},
+  {code:'DAI', name:'Daisy District',address:'246-250 N. Main, Plymouth',cluster:'plymouth',lat:42.373,lng:-83.470},
+  {code:'DEN', name:'Dennis Industrial',address:'50200-50420 Dennis Court, Wixom',cluster:'outer',lat:42.524,lng:-83.534},
+  {code:'GRN', name:'Green Road (2000 Green)',address:'2000 Green Road, Ann Arbor',cluster:'plymouth',lat:42.290,lng:-83.716},
+  {code:'HSQ', name:'Harvard Square',address:'44250/44300 Ford Rd & 5800-6034 N. Sheldon Rd, Canton',cluster:'outer',lat:42.310,lng:-83.504},
+  {code:'IRO', name:'Iron Ridge District',address:'404 E. 10 Mile, Pleasant Ridge / 660 E. 10 Mile, Ferndale',cluster:'ferndale',lat:42.471,lng:-83.144},
+  {code:'HLD', name:'Highland Lakes',address:'42925-43291 Seven Mile Road, Northville',cluster:'plymouth',lat:42.432,lng:-83.483},
+  {code:'ORM', name:'Orchard Mall',address:'6445 Orchard Lake Road, West Bloomfield',cluster:'westbloom',lat:42.548,lng:-83.384},
+  {code:'PGD', name:'Plymouth Green District',address:'3389-3395 Plymouth Road, Ann Arbor',cluster:'plymouth',lat:42.300,lng:-83.690},
+  {code:'PLY', name:'Plymouth Square',address:'4441-73 / 44155-523 / 44427-525 Ann Arbor Road, Plymouth',cluster:'plymouth',lat:42.360,lng:-83.492},
+  {code:'ROC', name:'Winchester District',address:'1100 Rochester Road S., Rochester Hills',cluster:'outer',lat:42.611,lng:-83.132},
+  {code:'WAT', name:'Waterford Plaza',address:'5038-5160 Highland Road, Waterford',cluster:'outer',lat:42.646,lng:-83.381},
+  {code:'WBCC',name:'West Bloomfield Corporate Center',address:'6960 Orchard Lake Road, West Bloomfield',cluster:'westbloom',lat:42.547,lng:-83.385},
+  {code:'MIN', name:'Minerva',address:'3040-3050 Minerva, Ferndale',cluster:'ferndale',lat:42.459,lng:-83.133},
+  {code:'LMC', name:'Landmark Church',address:'24520 N. Chrysler Drive, Hazel Park',cluster:'ferndale',lat:42.462,lng:-83.104},
+];
+const CLUSTER_NAMES={plymouth:'Plymouth / Ann Arbor',ferndale:'Ferndale / Pleasant Ridge',westbloom:'West Bloomfield / Southfield',outer:'Outer Ring'};
+const CLUSTER_ORDER=['plymouth','ferndale','westbloom','outer'];
+
+const SEASONAL_CHECKLISTS = {
+  winter:{icon:'❄️',label:'Winter',tasks:[
+    {desc:'Shoveling check — all walkways and entrances',priority:'high',notes:'Ensure all tenant entrances are clear'},
+    {desc:'Salt/de-ice all parking lots and sidewalks',priority:'high'},
+    {desc:'Heat check — all vacant units and buildings',priority:'urgent',notes:'Check thermostats, ensure pipes won\'t freeze'},
+    {desc:'Heat tape / winterize vacant units',priority:'high'},
+    {desc:'Check exterior hose bibs are shut off',priority:'routine'},
+  ]},
+  spring:{icon:'🌱',label:'Spring',tasks:[
+    {desc:'Roof check — look for winter damage, debris, ponding',priority:'high'},
+    {desc:'Inspect gutters and downspouts — clear any blockages',priority:'routine'},
+    {desc:'Check exterior caulking and sealants',priority:'routine'},
+    {desc:'Irrigation system startup check',priority:'routine'},
+    {desc:'Parking lot inspection — potholes, line fading',priority:'routine'},
+  ]},
+  summer:{icon:'☀️',label:'Summer',tasks:[
+    {desc:'AC troubleshooting check — all units',priority:'high',notes:'Check filters, verify cooling'},
+    {desc:'Irrigation system check — coverage and leaks',priority:'routine'},
+    {desc:'Inspect all exterior lighting',priority:'routine'},
+    {desc:'Check roof drains are clear',priority:'routine'},
+  ]},
+  fall:{icon:'🍂',label:'Fall',tasks:[
+    {desc:'Heating system check — get buildings ready for winter',priority:'high',notes:'Test all HVAC, replace filters'},
+    {desc:'Leaf blowing — all parking lots and walkways',priority:'routine'},
+    {desc:'Inspect weatherstripping on all exterior doors',priority:'routine'},
+    {desc:'Check window seals — look for drafts',priority:'routine'},
+    {desc:'Disconnect and drain irrigation system',priority:'routine'},
+    {desc:'Stock salt and ice melt supplies',priority:'high'},
+  ]}
+};
+
+const DEFAULT_TEMPLATES = [
+  {id:'tpl-1',name:'General Property Check',property:'',sublocation:'',notes:'Check parking lot, sidewalks, exterior lighting, any visible issues. Take photos of anything notable.',priority:'routine',duration:'30 min'},
+  {id:'tpl-2',name:'Vacancy Inspection',property:'',sublocation:'',notes:'Check HVAC, plumbing, windows, doors, ceiling tiles. Document condition with photos.',priority:'routine',duration:'1 hr'},
+  {id:'tpl-3',name:'Light Audit — Exterior',property:'',sublocation:'Parking lot / exterior',notes:'Walk the entire exterior and parking lot. Note any burned out lights by location.',priority:'routine',duration:'30 min'},
+  {id:'tpl-4',name:'Bathroom Check',property:'',sublocation:'',notes:'Check soap, paper towels, toilet paper. Look for leaks, running toilets, broken fixtures.',priority:'routine',duration:'15 min'},
+  {id:'tpl-5',name:'Window Cleaning',property:'',sublocation:'',notes:'Clean all exterior-facing windows. Note any cracked or damaged panes.',priority:'routine',duration:'2 hr'},
+];
+
+// ══════════════════════════════════════════════════════════════
+// FIREBASE CONFIG & STATE
+// ══════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBbnXy9R9NDG9ZDGEk4yHdfLf0t344ApSU",
+  authDomain: "maintenance-os-a9302.firebaseapp.com",
+  projectId: "maintenance-os-a9302",
+  storageBucket: "maintenance-os-a9302.firebasestorage.app",
+  messagingSenderId: "282196843782",
+  appId: "1:282196843782:web:4fd6b1d49866fe44475287",
+  measurementId: "G-YMMSXVDTPF"
+};
+
+let db = null;         // Firestore instance — set after SDK loads
+let fbReady = false;   // true once Firebase is connected
+
+let tasks=[], templates=[], recurring=[];
+let dayQueues={dan:[],skender:[]}, genOutputs={dan:'',skender:''};
+let pendingPhotos=[], lbPhotos=[], lbIdx=0, fnTaskId=null;
+
+// ── Sync status indicator ──────────────────────────────────────
+function setSyncStatus(state, msg){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  const styles = {
+    syncing: 'color:#5b8fff',
+    ok:      'color:#4caf7d',
+    error:   'color:#ff5c5c',
+    offline: 'color:#888'
+  };
+  const icons = { syncing:'⟳', ok:'✓', error:'⚠', offline:'○' };
+  el.style = styles[state]||styles.offline;
+  el.textContent = (icons[state]||'') + ' ' + msg;
+}
+
+// ── Firestore helpers ──────────────────────────────────────────
+async function fbSet(col, id, data){
+  if(!db) return;
+  try {
+    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await setDoc(doc(db, col, id), data);
+  } catch(e){ console.warn('fbSet error', e); }
+}
+
+async function fbGet(col){
+  if(!db) return [];
+  try {
+    const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDocs(collection(db, col));
+    return snap.docs.map(d => d.data());
+  } catch(e){ console.warn('fbGet error', e); return []; }
+}
+
+async function fbDelete(col, id){
+  if(!db) return;
+  try {
+    const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(doc(db, col, id));
+  } catch(e){ console.warn('fbDelete error', e); }
+}
+
+// ── Subscribe to real-time updates ────────────────────────────
+async function subscribeAll(){
+  const { collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+  onSnapshot(collection(db,'tasks'), snap => {
+    const remote = snap.docs.map(d=>d.data());
+    // Merge: keep any local tasks not yet in Firestore (created while offline)
+    const remoteIds = new Set(remote.map(t=>String(t.id)));
+    const localOnly = tasks.filter(t=>!remoteIds.has(String(t.id)));
+    tasks = [...remote, ...localOnly];
+    renderQueue(); updateStats(); renderDashboard(); renderActiveTasks();
+    if(leafletMap) renderMap();
+  });
+
+  onSnapshot(collection(db,'templates'), snap => {
+    const remote = snap.docs.map(d=>d.data());
+    templates = remote.length ? remote : [...DEFAULT_TEMPLATES];
+    renderTemplates();
+  });
+
+  onSnapshot(collection(db,'recurring'), snap => {
+    recurring = snap.docs.map(d=>d.data());
+    renderRecurring();
+  });
+
+  onSnapshot(collection(db,'meta'), snap => {
+    snap.docs.forEach(d=>{
+      if(d.id==='dayQueues'){
+        const dq = d.data();
+        dayQueues.dan = dq.dan||[];
+        dayQueues.skender = dq.skender||[];
+      }
+    });
+  });
+
+  setSyncStatus('ok', 'Live sync on');
+  fbReady = true;
+}
+
+// ── Save functions (write to Firestore; fallback to localStorage) ──
+function save(){
+  if(fbReady){
+    setSyncStatus('syncing','Saving...');
+    Promise.all(tasks.map(t => fbSet('tasks', String(t.id), t)))
+      .then(()=>setSyncStatus('ok','Saved ✓'))
+      .catch(()=>{ setSyncStatus('error','Save error — check connection'); });
+  }
+  try{ localStorage.setItem('fhmc_v4', JSON.stringify(tasks)); }catch(e){}
+}
+
+function saveSingleTask(t){
+  if(fbReady){
+    setSyncStatus('syncing','Saving...');
+    fbSet('tasks', String(t.id), t)
+      .then(()=>setSyncStatus('ok','Saved ✓'))
+      .catch(()=>{ setSyncStatus('error','Save error — check connection'); });
+  }
+  try{ localStorage.setItem('fhmc_v4', JSON.stringify(tasks)); }catch(e){}
+}
+
+function deleteTaskRemote(id){
+  if(fbReady) fbDelete('tasks', String(id));
+  try{ localStorage.setItem('fhmc_v4', JSON.stringify(tasks)); }catch(e){}
+}
+
+function saveTpl(){
+  if(fbReady){
+    Promise.all(templates.map(t => fbSet('templates', t.id, t)));
+  }
+  try{ localStorage.setItem('fhmc_templates_v1', JSON.stringify(templates)); }catch(e){}
+}
+
+function deleteTplRemote(id){
+  if(fbReady) fbDelete('templates', id);
+}
+
+function saveRec(){
+  if(fbReady){
+    Promise.all(recurring.map(r => fbSet('recurring', r.id, r)));
+  }
+  try{ localStorage.setItem('fhmc_recurring_v1', JSON.stringify(recurring)); }catch(e){}
+}
+
+function deleteRecRemote(id){
+  if(fbReady) fbDelete('recurring', id);
+}
+
+function saveDQ(){
+  if(fbReady) fbSet('meta','dayQueues', {dan:dayQueues.dan, skender:dayQueues.skender});
+  try{ localStorage.setItem('fhmc_dayqueues_v1', JSON.stringify(dayQueues)); }catch(e){}
+}
+
+// ── Local fallback load (used if Firebase is slow/offline) ────
+function loadLocal(){
+  try{ const d=localStorage.getItem('fhmc_v4');         if(d) tasks=JSON.parse(d); }catch(e){ tasks=[]; }
+  try{ const d=localStorage.getItem('fhmc_templates_v1');if(d) templates=JSON.parse(d); else templates=[...DEFAULT_TEMPLATES]; }catch(e){ templates=[...DEFAULT_TEMPLATES]; }
+  try{ const d=localStorage.getItem('fhmc_recurring_v1');if(d) recurring=JSON.parse(d); }catch(e){ recurring=[]; }
+  try{ const d=localStorage.getItem('fhmc_dayqueues_v1');if(d){const dq=JSON.parse(d);dayQueues.dan=dq.dan||[];dayQueues.skender=dq.skender||[];} }catch(e){}
+}
+
+// ── Export / Import / Clear ───────────────────────────────────
+function exportData(){
+  const blob=new Blob([JSON.stringify({tasks,templates,recurring,dayQueues},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`maintenance-os-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); toast('Data exported ✓');
+}
+function importData(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        if(d.tasks) tasks=d.tasks;
+        if(d.templates) templates=d.templates;
+        if(d.recurring) recurring=d.recurring;
+        if(d.dayQueues){dayQueues.dan=d.dayQueues.dan||[];dayQueues.skender=d.dayQueues.skender||[];}
+        save();saveTpl();saveRec();saveDQ();
+        renderQueue();renderTemplates();renderRecurring();updateStats();renderDashboard();
+        toast('Data imported ✓');
+      }catch(err){ toast('Import failed — invalid file.'); }
+    };r.readAsText(f);
+  };inp.click();
+}
+async function clearAllData(){
+  if(!confirm('⚠ Clear ALL data? This cannot be undone.')) return;
+  // Delete from Firestore
+  if(fbReady){
+    const dels = [
+      ...tasks.map(t=>fbDelete('tasks',String(t.id))),
+      ...templates.map(t=>fbDelete('templates',t.id)),
+      ...recurring.map(r=>fbDelete('recurring',r.id)),
+      fbDelete('meta','dayQueues')
+    ];
+    await Promise.all(dels);
+  }
+  ['fhmc_v4','fhmc_templates_v1','fhmc_recurring_v1','fhmc_dayqueues_v1'].forEach(k=>localStorage.removeItem(k));
+  tasks=[];templates=[...DEFAULT_TEMPLATES];recurring=[];dayQueues={dan:[],skender:[]};genOutputs={dan:'',skender:''};
+  renderQueue();renderTemplates();renderRecurring();updateStats();renderDashboard();
+  toast('All data cleared.');
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+setSyncStatus('syncing', 'Connecting...');
+
+// Load from localStorage immediately so UI isn't blank while Firebase connects
+loadLocal();
+populatePropSelects();
+renderPropGrid();
+
+const today=new Date();
+const YYYY=today.getFullYear(),MM=String(today.getMonth()+1).padStart(2,'0'),DD=String(today.getDate()).padStart(2,'0');
+const todayStr=`${YYYY}-${MM}-${DD}`;
+['gen-date','t-date','r-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr;});
+
+renderQueue(); updateStats(); renderDashboard(); renderTemplates(); renderRecurring(); renderSeasonBtns(); renderActiveTasks();
+
+// Connect to Firebase async — UI is already usable from localStorage above
+(async()=>{
+  try{
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getFirestore }  = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getFirestore(app);
+    await subscribeAll();
+  } catch(e){
+    console.warn('Firebase failed, running offline:', e);
+    setSyncStatus('offline','Offline mode');
+  }
+})();
+
+function populatePropSelects(){
+  ['t-prop','r-prop','atpl-prop','edit-prop'].forEach(selId=>{
+    const sel=document.getElementById(selId);if(!sel)return;
+    // Clear all existing options to prevent duplicates on re-call
+    sel.innerHTML='';
+    const blank=document.createElement('option');
+    blank.value='';
+    blank.textContent = selId==='atpl-prop' ? 'Any' : '— Select —';
+    sel.appendChild(blank);
+    CLUSTER_ORDER.forEach(c=>{
+      const props=PROPS.filter(p=>p.cluster===c);
+      const og=document.createElement('optgroup');
+      og.label='● '+CLUSTER_NAMES[c];
+      props.forEach(p=>{const o=document.createElement('option');o.value=p.code;o.textContent=`${p.code} — ${p.name}`;og.appendChild(o);});
+      sel.appendChild(og);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// TODAY'S BRIEFING
+// ══════════════════════════════════════════════════════════════
+function renderBriefing(){
+  const el = document.getElementById('briefing-items');
+  const dateEl = document.getElementById('briefing-date');
+  if(!el) return;
+
+  // Set date
+  const now = new Date();
+  dateEl.textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  const pending  = tasks.filter(t=>t.status==='pending');
+  const assigned = tasks.filter(t=>t.status==='assigned');
+  const urgent   = pending.filter(t=>t.priority==='urgent');
+  const overdue  = pending.filter(t=>t.date&&t.date<todayStr);
+  const followups= tasks.filter(t=>t.followup&&t.status!=='done');
+  const unassigned = pending.filter(t=>!t.assignedTo);
+  const dueTodayRec = recurring.filter(r=>r.nextDue<=todayStr);
+  const dueToday = pending.filter(t=>t.date===todayStr);
+  const danLoad  = assigned.filter(t=>t.assignedTo==='dan').length;
+  const skLoad   = assigned.filter(t=>t.assignedTo==='skender').length;
+
+  const items = [];
+
+  // ── CRITICAL: urgent unassigned ──
+  if(urgent.length){
+    const unassignedUrgent = urgent.filter(t=>!t.assignedTo);
+    if(unassignedUrgent.length){
+      const names = unassignedUrgent.slice(0,2).map(t=>`${t.property} — ${t.desc.slice(0,40)}${t.desc.length>40?'…':''}`).join('; ');
+      items.push({
+        type:'critical', icon:'🔴',
+        main: `${unassignedUrgent.length} urgent task${unassignedUrgent.length>1?'s':''} need${unassignedUrgent.length===1?'s':''} assignment today`,
+        sub: names,
+        action:'Assign now →', tab:'generate'
+      });
+    } else {
+      items.push({
+        type:'info', icon:'🔴',
+        main: `${urgent.length} urgent task${urgent.length>1?'s are':' is'} assigned and in progress`,
+        sub: urgent.map(t=>t.property).join(', '),
+      });
+    }
+  }
+
+  // ── CRITICAL: overdue tasks ──
+  if(overdue.length){
+    const worst = overdue.sort((a,b)=>a.date.localeCompare(b.date))[0];
+    items.push({
+      type:'critical', icon:'⚠️',
+      main: `${overdue.length} task${overdue.length>1?'s are':' is'} past due — oldest at ${worst.property}`,
+      sub: `"${worst.desc.slice(0,60)}${worst.desc.length>60?'…':''}" — due ${fmtDate(worst.date)}`,
+      action:'View queue →', tab:'queue'
+    });
+  }
+
+  // ── WARNING: due today ──
+  if(dueToday.length){
+    const names = dueToday.slice(0,2).map(t=>`${t.property}`).join(', ');
+    items.push({
+      type:'warning', icon:'📅',
+      main: `${dueToday.length} task${dueToday.length>1?'s':''} due today`,
+      sub: `At: ${names}${dueToday.length>2?` +${dueToday.length-2} more`:''}`,
+      action:'View queue →', tab:'queue'
+    });
+  }
+
+  // ── WARNING: follow-ups waiting ──
+  if(followups.length){
+    const props = [...new Set(followups.map(t=>t.property))].slice(0,3).join(', ');
+    items.push({
+      type:'warning', icon:'🔁',
+      main: `${followups.length} follow-up${followups.length>1?'s':''} waiting for attention`,
+      sub: `Properties: ${props}${followups.length>3?` +${followups.length-3} more`:''}`,
+      action:'View queue →', tab:'queue'
+    });
+  }
+
+  // ── INFO: recurring tasks due ──
+  if(dueTodayRec.length){
+    items.push({
+      type:'info', icon:'🔄',
+      main: `${dueTodayRec.length} recurring task${dueTodayRec.length>1?'s are':' is'} due — push to queue`,
+      sub: dueTodayRec.slice(0,2).map(r=>`${r.property} — ${r.desc.slice(0,35)}${r.desc.length>35?'…':''}`).join('; '),
+      action:'Go to Recurring →', tab:'recurring'
+    });
+  }
+
+  // ── INFO: unassigned pending tasks ──
+  if(unassigned.length > 0 && !urgent.filter(t=>!t.assignedTo).length){
+    items.push({
+      type:'info', icon:'📋',
+      main: `${unassigned.length} pending task${unassigned.length>1?'s haven\'t':' hasn\'t'} been assigned yet`,
+      sub: `Use Auto-Schedule or build daily lists manually`,
+      action:'Build daily lists →', tab:'generate'
+    });
+  }
+
+  // ── INFO: workload imbalance ──
+  if(danLoad > 0 || skLoad > 0){
+    const diff = Math.abs(danLoad - skLoad);
+    if(diff >= 3){
+      const heavy = danLoad > skLoad ? 'Dan' : 'Skender';
+      const light = danLoad > skLoad ? 'Skender' : 'Dan';
+      items.push({
+        type:'info', icon:'⚖️',
+        main: `Workload imbalance — ${heavy} has ${diff} more tasks than ${light}`,
+        sub: `Dan: ${danLoad} assigned · Skender: ${skLoad} assigned`,
+        action:'Rebalance →', tab:'generate'
+      });
+    }
+  }
+
+  // ── GOOD: everything clean ──
+  if(items.length === 0){
+    if(tasks.length === 0){
+      el.innerHTML=`<div class="briefing-all-good"><div class="big-icon">🏢</div>No tasks in the system yet. Add your first task to get started.</div>`;
+    } else {
+      el.innerHTML=`<div class="briefing-all-good"><div class="big-icon">✅</div><strong>You're on top of everything.</strong><br><span style="font-size:12px;">No urgent issues, no overdue tasks, no follow-ups pending.</span></div>`;
+    }
+    return;
+  }
+
+  // Cap at 5 items, most critical first
+  const priority = {critical:0, warning:1, info:2, good:3};
+  items.sort((a,b)=>(priority[a.type]||9)-(priority[b.type]||9));
+  const shown = items.slice(0,5);
+
+  el.innerHTML = shown.map(item=>`
+    <div class="briefing-item ${item.type}">
+      <div class="briefing-icon">${item.icon}</div>
+      <div class="briefing-text">
+        <div class="briefing-main">${item.main}</div>
+        ${item.sub?`<div class="briefing-sub">${esc(item.sub)}</div>`:''}
+      </div>
+      ${item.action?`<button class="briefing-action" onclick="showPanelByName('${item.tab}')">${item.action}</button>`:''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderDashboard(){
+  renderBriefing();
+  const pending=tasks.filter(t=>t.status==='pending');
+  const assigned=tasks.filter(t=>t.status==='assigned');
+  const done=tasks.filter(t=>t.status==='done');
+  const urgent=pending.filter(t=>t.priority==='urgent');
+  const followups=tasks.filter(t=>t.followup&&t.status!=='done');
+  const overdue=pending.filter(t=>t.date&&t.date<todayStr);
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="dash-card" onclick="openTaskModal('pending')" title="Click to view pending tasks"><div class="dash-num">${pending.length}</div><div class="dash-label">Pending Tasks</div><div class="dash-sub">${urgent.length} urgent</div><div class="dash-hint">click to view →</div></div>
+    <div class="dash-card" onclick="openTaskModal('overdue')" title="Click to view overdue tasks"><div class="dash-num" style="color:var(--danger)">${overdue.length}</div><div class="dash-label">Overdue</div><div class="dash-sub">past due date</div><div class="dash-hint">click to view →</div></div>
+    <div class="dash-card" onclick="openTaskModal('followup')" title="Click to view follow-ups"><div class="dash-num" style="color:var(--warn)">${followups.length}</div><div class="dash-label">Follow-ups</div><div class="dash-sub">need attention</div><div class="dash-hint">click to view →</div></div>
+    <div class="dash-card" onclick="openTaskModal('done')" title="Click to view completed tasks"><div class="dash-num" style="color:var(--success)">${done.length}</div><div class="dash-label">Completed</div><div class="dash-sub">all time</div><div class="dash-hint">click to view →</div></div>
+    <div class="dash-card" onclick="openTaskModal('assigned')" title="Click to view assigned tasks"><div class="dash-num" style="color:var(--accent2)">${assigned.length}</div><div class="dash-label">Assigned</div><div class="dash-sub">in progress</div><div class="dash-hint">click to view →</div></div>
+    <div class="dash-card" onclick="openTaskModal('urgent')" title="Click to view urgent tasks"><div class="dash-num" style="color:var(--danger)">${urgent.length}</div><div class="dash-label">Urgent</div><div class="dash-sub">${urgent.filter(t=>!t.assignedTo).length} unassigned</div><div class="dash-hint">click to view →</div></div>
+  `;
+
+  // Overdue
+  const odEl=document.getElementById('dash-overdue');
+  if(!overdue.length){odEl.innerHTML='<div style="color:var(--text3);font-size:12px;font-style:italic;">No overdue tasks.</div>';}
+  else odEl.innerHTML=overdue.map(t=>`<div class="overdue-item">
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent);text-transform:uppercase;">${t.property}</span>
+    <span style="font-size:12px;margin-left:8px;">${esc(t.desc)}</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--danger);margin-left:8px;">Due ${fmtDate(t.date)}</span>
+  </div>`).join('');
+
+  // Follow-ups
+  const fuEl=document.getElementById('dash-followups');
+  if(!followups.length){fuEl.innerHTML='<div style="color:var(--text3);font-size:12px;font-style:italic;">No follow-ups pending.</div>';}
+  else fuEl.innerHTML=followups.map(t=>`<div class="overdue-item" style="background:rgba(232,131,77,.07);border-color:rgba(232,131,77,.25);">
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--accent);text-transform:uppercase;">${t.property}</span>
+    <span style="font-size:12px;margin-left:8px;">${esc(t.desc)}</span>
+    ${t.fieldNote?`<div style="font-size:11px;color:#7fd4aa;margin-top:4px;">📝 ${esc(t.fieldNote)}</div>`:''}
+  </div>`).join('');
+
+  // Property activity
+  const propCounts={};
+  tasks.forEach(t=>{if(!propCounts[t.property])propCounts[t.property]={pending:0,done:0};if(t.status==='pending')propCounts[t.property].pending++;if(t.status==='done')propCounts[t.property].done++;});
+  const propList=Object.entries(propCounts).sort((a,b)=>(b[1].pending+b[1].done)-(a[1].pending+a[1].done));
+  const maxCount=Math.max(...propList.map(([,v])=>v.pending+v.done),1);
+  const propEl=document.getElementById('dash-props');
+  if(!propList.length){propEl.innerHTML='<div style="color:var(--text3);font-size:12px;font-style:italic;">No activity yet.</div>';}
+  else propEl.innerHTML=propList.map(([code,counts])=>{
+    const total=counts.pending+counts.done;
+    const pct=Math.round(total/maxCount*100);
+    return `<div class="prop-activity">
+      <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--accent);min-width:44px;">${esc(code)}</span>
+      <div class="prop-bar-wrap"><div class="prop-bar" style="width:${pct}%"></div></div>
+      <span style="font-size:11px;color:var(--text2);font-family:var(--font-mono);">${counts.pending} open · ${counts.done} done</span>
+    </div>`;
+  }).join('');
+
+  // Tech summary
+  const danDone=tasks.filter(t=>t.assignedTo==='dan'&&t.status==='done');
+  const skDone=tasks.filter(t=>t.assignedTo==='skender'&&t.status==='done');
+  const danPending=tasks.filter(t=>t.assignedTo==='dan'&&t.status==='assigned');
+  const skPending=tasks.filter(t=>t.assignedTo==='skender'&&t.status==='assigned');
+  document.getElementById('dash-techs').innerHTML=`
+    <div class="dash-card" style="border-color:rgba(91,143,255,.3);">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--dan);margin-bottom:10px;">Dan</div>
+      <div style="font-size:12px;color:var(--text2);">Completed: <strong style="color:var(--text)">${danDone.length}</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">In progress: <strong style="color:var(--text)">${danPending.length}</strong></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">Larger repairs · skilled installs</div>
+    </div>
+    <div class="dash-card" style="border-color:rgba(232,131,77,.3);">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--skender);margin-bottom:10px;">Skender</div>
+      <div style="font-size:12px;color:var(--text2);">Completed: <strong style="color:var(--text)">${skDone.length}</strong></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">In progress: <strong style="color:var(--text)">${skPending.length}</strong></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">Routine checks · inspections</div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SMART AUTO-ASSIGNMENT ENGINE
+// ══════════════════════════════════════════════════════════════
+
+// Dan = skilled repairs, installs, trades work
+const DAN_KEYWORDS = [
+  // Structural / building
+  'repair','fix','replace','install','build','construct','rebuild','reinforce',
+  // Trades
+  'plumb','plumbing','pipe','drain','leak','faucet','toilet','sink','water heater',
+  'electric','electrical','wiring','outlet','breaker','panel','circuit','light fixture',
+  'hvac','furnace','boiler','heat pump','ac unit','ductwork','thermostat',
+  'roof','roofing','shingle','flat roof','membrane','flashing',
+  // Carpentry / finishes
+  'drywall','patch','paint','painting','caulk','sealant','grout','tile','flooring',
+  'door','frame','hinge','lock','deadbolt','window','glass','pane','frame',
+  'deck','fence','gate','railing','concrete','asphalt','parking lot','pothole',
+  'carpentry','cabinet','counter','vanity','trim','baseboard','ceiling','drop ceiling',
+  // Appliances
+  'washer','dryer','dishwasher','garbage disposal','oven','stove','refrigerator',
+  // General repair words
+  'broken','damaged','cracked','leaking','failed','not working','won\'t','doesn\'t work',
+  'urgent repair','emergency','burst','flooding','no heat','no hot water',
+];
+
+// Skender = routine checks, cleanups, light maintenance, inspections
+const SKENDER_KEYWORDS = [
+  // Inspection / check
+  'inspect','inspection','check','audit','survey','walk','walkthrough','assess',
+  'photo','photograph','document','note','report','log',
+  // Cleaning / grounds
+  'clean','cleaning','sweep','mop','trash','garbage','debris','litter','haul',
+  'lawn','mow','mowing','trim','weed','landscape','mulch','garden',
+  'shovel','snow','salt','de-ice','ice','leaf','leaves','blowing',
+  'pressure wash','power wash','wash','wipe','polish',
+  // Light maintenance
+  'bulb','light bulb','lamp','replace bulb','exterior light','parking light',
+  'battery','smoke detector','carbon monoxide','co detector',
+  'soap','paper towel','toilet paper','restock','supply','supplies',
+  'key','lockbox','tag','label','sign','posting',
+  'measure','measurement','quote','estimate','bid',
+  'general check','routine','preventive','prevention',
+  // Tenant-facing
+  'show','showing','access','let in','meet','coordinate',
+  'notice','posting','post notice','deliver',
+];
+
+let suggestedTech = null;   // 'dan' | 'skender' | null
+let acceptedTech  = null;   // set when user clicks Accept
+
+function getRecommendedTech(desc){
+  if(!desc || desc.trim().length < 3) return null;
+  const d = desc.toLowerCase();
+
+  let danScore = 0, skScore = 0;
+  const danMatches = [], skMatches = [];
+
+  DAN_KEYWORDS.forEach(kw => {
+    if(d.includes(kw)){ danScore += kw.split(' ').length; danMatches.push(kw); }
+  });
+  SKENDER_KEYWORDS.forEach(kw => {
+    if(d.includes(kw)){ skScore += kw.split(' ').length; skMatches.push(kw); }
+  });
+
+  if(danScore === 0 && skScore === 0) return null;
+  if(danScore === skScore) return null; // true tie — don't guess
+
+  const tech   = danScore > skScore ? 'dan' : 'skender';
+  const match  = danScore > skScore ? danMatches[0] : skMatches[0];
+  const margin = Math.abs(danScore - skScore);
+  const conf   = margin >= 3 ? 'high' : 'medium';
+
+  // Build a plain-English reason
+  const reasons = {
+    dan: {
+      high:   `Matches Dan's specialty (${match}) — skilled trade work`,
+      medium: `Leans toward Dan (${match}) — confirm if needed`,
+    },
+    skender: {
+      high:   `Matches Skender's specialty (${match}) — routine/inspection work`,
+      medium: `Leans toward Skender (${match}) — confirm if needed`,
+    }
+  };
+
+  return { tech, reason: reasons[tech][conf], confidence: conf };
+}
+
+function updateRecBanner(){
+  const desc = document.getElementById('t-desc').value;
+  const banner = document.getElementById('rec-banner');
+  acceptedTech = null; // reset accepted when description changes
+
+  const rec = getRecommendedTech(desc);
+  suggestedTech = rec ? rec.tech : null;
+
+  if(!rec){
+    banner.className = 'rec-banner';
+    return;
+  }
+
+  const other = rec.tech === 'dan' ? 'skender' : 'dan';
+  const otherName = other === 'dan' ? 'Dan' : 'Skender';
+  const techName  = rec.tech === 'dan' ? 'Dan' : 'Skender';
+
+  document.getElementById('rec-tech-name').textContent = techName;
+  document.getElementById('rec-tech-name').className   = `rec-name ${rec.tech}`;
+  document.getElementById('rec-reason').textContent    = rec.reason;
+  document.getElementById('rec-actions').innerHTML = `
+    <button class="rec-btn accept-${rec.tech}" onclick="acceptRec('${rec.tech}')">✓ Assign to ${techName}</button>
+    <button class="rec-btn override" onclick="acceptRec('${other}')">→ ${otherName} instead</button>
+    <button class="rec-btn override" onclick="dismissRec()">Skip</button>
+  `;
+
+  banner.className = `rec-banner show rec-conf-${rec.confidence}`;
+}
+
+function acceptRec(tech){
+  acceptedTech = tech;
+  const name = tech === 'dan' ? 'Dan' : 'Skender';
+  const banner = document.getElementById('rec-banner');
+  banner.className = `rec-banner show`;
+  banner.style.borderLeftColor = tech === 'dan' ? 'var(--dan)' : 'var(--skender)';
+  document.getElementById('rec-actions').innerHTML = `
+    <span class="rec-accepted ${tech}">✓ Assigned to ${name}</span>
+    <button class="rec-btn override" style="margin-left:6px;" onclick="dismissRec()">Change</button>
+  `;
+  document.getElementById('rec-reason').textContent = `Will be pre-assigned to ${name} when added.`;
+}
+
+function dismissRec(){
+  acceptedTech = null;
+  suggestedTech = null;
+  document.getElementById('rec-banner').className = 'rec-banner';
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADD TASK
+// ══════════════════════════════════════════════════════════════
+function addTask(overrides={}){
+  const desc=(overrides.desc||document.getElementById('t-desc').value).trim();
+  const propCode=overrides.property||document.getElementById('t-prop').value;
+  if(!desc){toast('Please enter a task description.');return;}
+  if(!propCode){toast('Please select a property.');return;}
+  const prop=PROPS.find(p=>p.code===propCode);
+
+  // Use accepted tech if user clicked assign, otherwise null
+  const preAssigned = Object.keys(overrides).length ? null : acceptedTech;
+
+  const newTask = {
+    id:Date.now()+Math.random(),
+    desc,property:propCode,propertyName:prop?prop.name:propCode,cluster:prop?prop.cluster:'',
+    sublocation:overrides.sublocation||document.getElementById('t-sub').value.trim(),
+    notes:overrides.notes||document.getElementById('t-notes').value.trim(),
+    priority:overrides.priority||document.getElementById('t-priority').value,
+    duration:overrides.duration||document.getElementById('t-dur').value,
+    date:overrides.date||document.getElementById('t-date').value,
+    time:overrides.time||document.getElementById('t-time').value,
+    followup:overrides.followup||(document.getElementById('t-followup').value==='yes'),
+    status: preAssigned ? 'assigned' : 'pending',
+    assignedTo: preAssigned || null,
+    createdAt:new Date().toISOString(),
+    photos:[...(overrides.photos||pendingPhotos)],
+    fieldNote:'',isRecurring:overrides.isRecurring||false,
+    suggestedTech: suggestedTech || null,
+  };
+  tasks.unshift(newTask);
+  saveSingleTask(newTask);
+  if(!Object.keys(overrides).length){ clearForm(); dismissRec(); }
+  renderQueue();updateStats();renderDashboard();
+  toast(preAssigned ? `Task added — assigned to ${preAssigned==='dan'?'Dan':'Skender'} ✓` : 'Task added ✓');
+}
+
+function clearForm(){
+  ['t-desc','t-sub','t-notes','t-time'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('t-prop').value='';
+  document.getElementById('t-priority').value='routine';
+  document.getElementById('t-dur').value='';
+  document.getElementById('t-date').value=todayStr;
+  document.getElementById('t-followup').value='';
+  pendingPhotos=[];
+  document.getElementById('photo-strip').innerHTML='';
+  document.getElementById('pf-input').value='';
+  dismissRec();
+}
+
+// ══════════════════════════════════════════════════════════════
+// QUEUE RENDER
+// ══════════════════════════════════════════════════════════════
+function renderQueue(){
+  const fp=document.getElementById('f-priority').value;
+  const fc=document.getElementById('f-cluster').value;
+  const fs=document.getElementById('f-status').value;
+  const q=(document.getElementById('f-search').value||'').trim().toLowerCase();
+
+  let filtered=tasks.filter(t=>{
+    // Status filter
+    if(fs==='pending'  && t.status!=='pending')  return false;
+    if(fs==='assigned' && t.status!=='assigned') return false;
+    if(fs==='followup' && !(t.followup&&t.status!=='done')) return false;
+    if(fs==='all'      && t.status==='done')     return false; // hide done in 'all' view
+    if(fs!=='all' && t.status==='done')          return false;
+    // Priority filter
+    if(fp && t.priority!==fp) return false;
+    // Cluster filter
+    if(fc && t.cluster!==fc)  return false;
+    // Search
+    if(q && !t.property.toLowerCase().includes(q) && !t.desc.toLowerCase().includes(q) && !(t.propertyName||'').toLowerCase().includes(q) && !(t.sublocation||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b)=>{
+    const po={urgent:0,high:1,routine:2};
+    if(po[a.priority]!==po[b.priority]) return po[a.priority]-po[b.priority];
+    if(a.date&&b.date) return a.date.localeCompare(b.date);
+    if(a.date) return -1;if(b.date) return 1;
+    return 0;
+  });
+
+  const el=document.getElementById('queue-list');
+  if(!filtered.length){el.innerHTML=`<div class="empty-state"><div class="icon">📋</div>No tasks match this filter.</div>`;return;}
+  el.innerHTML=filtered.map(taskHTML).join('');
+}
+
+function quickAssign(id, tech){
+  const t=tasks.find(t=>t.id==id);if(!t)return;
+  if(tech===''){
+    t.assignedTo=null;
+    t.status='pending';
+  } else {
+    t.assignedTo=tech;
+    t.status='assigned';
+    // Keep day queue in sync
+    const other=tech==='dan'?'skender':'dan';
+    dayQueues[other]=dayQueues[other].filter(i=>i!=id);
+    if(!dayQueues[tech].includes(id))dayQueues[tech].push(id);
+    saveDQ();
+  }
+  saveSingleTask(t);renderQueue();renderActiveTasks();updateStats();renderDashboard();
+  toast(tech ? `Assigned to ${tech==='dan'?'Dan':'Skender'} ✓` : 'Unassigned ✓');
+}
+
+function taskHTML(t){
+  const pBadge={urgent:'badge-urgent',high:'badge-high',routine:'badge-routine'}[t.priority];
+  const pLabel={urgent:'Urgent',high:'High',routine:'Routine'}[t.priority];
+  const cls=t.status==='done'?'done '+(t.priority||'routine'):(t.status==='assigned'?'assigned ':'')+t.priority;
+  const cb=t.cluster?`<span class="cluster-badge cluster-${t.cluster}">${CLUSTER_NAMES[t.cluster]||t.cluster}</span>`:'';
+  const ab=t.assignedTo?`<span class="assigned-to assigned-${t.assignedTo}">${t.assignedTo}</span>`:'';
+  const ts=(t.date||t.time)?`<span class="task-time">${t.date?fmtDate(t.date):''} ${t.time?'@ '+fmt12(t.time):''}</span>`:'';
+  const dur=t.duration?`<span class="task-dur">~${t.duration}</span>`:'';
+  const photos=t.photos&&t.photos.length?t.photos:[];
+  const realPhotos=photos.filter(src=>typeof src==='string'&&src.startsWith('http'));
+  const photoBadge=realPhotos.length?`<span class="photo-badge">📷 ${realPhotos.length}</span>`:'';
+  const fuBadge=t.followup?`<span class="badge badge-followup">Follow-up</span>`:'';
+  const recBadge=t.isRecurring?`<span class="badge badge-recurring">↺ Recurring</span>`:'';
+  const tid=JSON.stringify(t.id);
+  const photoHTML=realPhotos.length?`<div class="task-photos">${realPhotos.map((src,i)=>`<img class="task-thumb" src="${src}" onclick="event.stopPropagation();openLB(tasks.find(x=>x.id==${tid}).photos.filter(s=>s.startsWith('http')),${i})" />`).join('')}</div>`:'';
+  const fnHTML=t.fieldNote?`<div class="field-note"><div class="field-note-label">📝 Field Note</div>${esc(t.fieldNote)}</div>`:'';
+
+  return `<div class="task-item ${cls}" style="cursor:pointer;" onclick="handleTaskClick(event,${tid})">
+    <div>
+      <div class="task-top">
+        <span class="task-prop">${esc(t.property)}</span>
+        ${t.sublocation?`<span style="font-size:11px;color:var(--text2)">/ ${esc(t.sublocation)}</span>`:''}
+        <span class="badge ${pBadge}">${pLabel}</span>${cb}${ab}${fuBadge}${recBadge}${photoBadge}
+      </div>
+      <div class="task-desc">${esc(t.desc)}</div>
+      ${t.notes?`<div class="task-notes">${esc(t.notes)}</div>`:''}
+      <div class="task-meta">${ts}${dur}</div>
+      ${photoHTML}${fnHTML}
+    </div>
+    <div class="task-actions" onclick="event.stopPropagation()">
+      ${t.status!=='done'?`<select class="assign-select assign-${t.assignedTo||'none'}" onchange="quickAssign(${tid},this.value)" title="Assign to tech">
+        <option value="" ${!t.assignedTo?'selected':''}>— Assign —</option>
+        <option value="dan" ${t.assignedTo==='dan'?'selected':''}>Dan</option>
+        <option value="skender" ${t.assignedTo==='skender'?'selected':''}>Skender</option>
+      </select>`:''}
+      ${t.status!=='done'?`<button class="btn-quick-done" onclick="markDone(${tid})" title="Mark complete">✓</button>`:''}
+      ${t.status!=='done'?`<button class="btn btn-secondary btn-sm" onclick="openFNModal(${tid})">📝 Note</button>`:''}
+      ${t.status!=='done'?`<button class="btn btn-secondary btn-sm" onclick="editTask(${tid})">Edit</button>`:''}
+      ${t.status==='done'
+        ?`<button class="btn btn-secondary btn-sm" onclick="restoreTask(${tid})">Restore</button>`
+        :''}
+      <button class="btn btn-danger" onclick="deleteTask(${tid})">✕</button>
+    </div>
+  </div>`;
+}
+
+function markDone(id){const t=tasks.find(t=>t.id==id);if(t){t.status='done';t.completedAt=new Date().toISOString();saveSingleTask(t);renderQueue();updateStats();renderDashboard();toast('Marked complete ✓');}}
+function restoreTask(id){const t=tasks.find(t=>t.id==id);if(t){t.status='pending';t.assignedTo=null;delete t.completedAt;saveSingleTask(t);renderQueue();updateStats();renderDashboard();}}
+function deleteTask(id){if(!confirm('Delete this task?'))return;tasks=tasks.filter(t=>t.id!=id);dayQueues.dan=dayQueues.dan.filter(i=>i!=id);dayQueues.skender=dayQueues.skender.filter(i=>i!=id);deleteTaskRemote(id);saveDQ();renderQueue();updateStats();renderDashboard();}
+let editPendingPhotos = [];
+
+function handleTaskClick(event, id){
+  // Only open if click was on the card body, not action buttons
+  if(event.target.closest('.task-actions')) return;
+  editTask(id);
+}
+
+function editTask(id){
+  const t=tasks.find(t=>t.id==id);if(!t)return;
+  editPendingPhotos = [];
+  document.getElementById('edit-id').value=t.id;
+  document.getElementById('edit-desc').value=t.desc;
+  document.getElementById('edit-prop').value=t.property;
+  document.getElementById('edit-sub').value=t.sublocation||'';
+  document.getElementById('edit-notes').value=t.notes||'';
+  document.getElementById('edit-priority').value=t.priority;
+  document.getElementById('edit-dur').value=t.duration||'';
+  document.getElementById('edit-date').value=t.date||'';
+  document.getElementById('edit-time').value=t.time||'';
+  document.getElementById('edit-followup').value=t.followup?'yes':'';
+  document.getElementById('edit-assign').value=t.assignedTo||'';
+
+  // Populate photo gallery
+  const realPhotos=(t.photos||[]).filter(s=>typeof s==='string'&&s.startsWith('http'));
+  const gallery=document.getElementById('edit-photo-gallery');
+  const grid=document.getElementById('edit-photo-grid');
+  if(realPhotos.length){
+    gallery.style.display='block';
+    // Store in window so onclick attrs don't need inline JSON (avoids quote-clash bugs)
+    window._editModalPhotos = realPhotos;
+    grid.innerHTML=realPhotos.map((src,i)=>`
+      <div style="position:relative;width:140px;height:140px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);cursor:zoom-in;transition:transform .15s,box-shadow .15s;" onmouseenter="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 16px rgba(0,0,0,.2)'" onmouseleave="this.style.transform='';this.style.boxShadow=''" onclick="event.stopPropagation();openLB(window._editModalPhotos,${i})">
+        <img src="${src}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.35);color:#fff;font-size:10px;text-align:center;padding:4px;opacity:0;transition:opacity .15s;pointer-events:none;" class="photo-hint">click to expand</div>
+      </div>`).join('');
+    // Show hint on hover via JS since CSS :hover can't target siblings in innerHTML
+    grid.querySelectorAll('div').forEach(d=>{
+      d.addEventListener('mouseenter',()=>{ const h=d.querySelector('.photo-hint'); if(h) h.style.opacity='1'; });
+      d.addEventListener('mouseleave',()=>{ const h=d.querySelector('.photo-hint'); if(h) h.style.opacity='0'; });
+    });
+  } else {
+    gallery.style.display='none';
+    grid.innerHTML='';
+  }
+  document.getElementById('edit-photo-strip').innerHTML='';
+  document.getElementById('edit-pf-input').value='';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function handleEditDrop(e){
+  e.preventDefault();e.stopPropagation();
+  document.getElementById('edit-photo-drop').classList.remove('drag-over');
+  const files=e.dataTransfer&&e.dataTransfer.files;
+  if(files&&files.length) handleEditPhotoFiles(files);
+}
+
+function handleEditPhotoFiles(files){
+  Array.from(files).forEach(async(file)=>{
+    if(!file.type.startsWith('image/')) return;
+    const idx=editPendingPhotos.length;
+    editPendingPhotos.push('loading');
+    renderEditPhotoStrip();
+    const url=await uploadToCloudinary(file);
+    if(!url){ editPendingPhotos.splice(idx,1); }
+    else { editPendingPhotos[idx]=url; }
+    renderEditPhotoStrip();
+  });
+  document.getElementById('edit-pf-input').value='';
+}
+
+function renderEditPhotoStrip(){
+  const strip=document.getElementById('edit-photo-strip');
+  if(!strip) return;
+  strip.innerHTML=editPendingPhotos.map((url,i)=>
+    url==='loading'
+      ? `<div class="photo-wrap" style="display:flex;align-items:center;justify-content:center;background:var(--surface2);"><span style="font-size:10px;color:var(--text3);">...</span></div>`
+      : `<div class="photo-wrap"><img src="${url}"><button class="photo-rm" onclick="editPendingPhotos.splice(${i},1);renderEditPhotoStrip();">✕</button></div>`
+  ).join('');
+}
+
+function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const t=tasks.find(t=>String(t.id)===String(id));if(!t)return;
+  const desc=document.getElementById('edit-desc').value.trim();
+  const propCode=document.getElementById('edit-prop').value;
+  if(!desc){toast('Please enter a task description.');return;}
+  if(!propCode){toast('Please select a property.');return;}
+  const prop=PROPS.find(p=>p.code===propCode);
+  t.desc=desc;
+  t.property=propCode;
+  t.propertyName=prop?prop.name:propCode;
+  t.cluster=prop?prop.cluster:'';
+  t.sublocation=document.getElementById('edit-sub').value.trim();
+  t.notes=document.getElementById('edit-notes').value.trim();
+  t.priority=document.getElementById('edit-priority').value;
+  t.duration=document.getElementById('edit-dur').value;
+  t.date=document.getElementById('edit-date').value;
+  t.time=document.getElementById('edit-time').value;
+  t.followup=document.getElementById('edit-followup').value==='yes';
+  const newAssign=document.getElementById('edit-assign').value;
+  t.assignedTo=newAssign||null;
+  t.status=newAssign?'assigned':'pending';
+  // Merge any newly uploaded photos
+  const newPhotos=editPendingPhotos.filter(s=>typeof s==='string'&&s.startsWith('http'));
+  if(newPhotos.length) t.photos=[...(t.photos||[]).filter(s=>typeof s==='string'&&s.startsWith('http')),...newPhotos];
+  saveSingleTask(t);
+  renderQueue();renderDashboard();updateStats();renderActiveTasks();
+  closeEditModal();
+  toast('Task updated ✓');
+}
+
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');editPendingPhotos=[];}
+
+// ══════════════════════════════════════════════════════════════
+// FIELD NOTES
+// ══════════════════════════════════════════════════════════════
+function openFNModal(id){fnTaskId=id;document.getElementById('fn-text').value='';document.getElementById('fn-status').value='done';document.getElementById('fn-modal').classList.add('open');}
+function closeFNModal(){document.getElementById('fn-modal').classList.remove('open');fnTaskId=null;}
+function saveFN(){
+  const t=tasks.find(t=>t.id==fnTaskId);if(!t)return;
+  const note=document.getElementById('fn-text').value.trim();
+  const status=document.getElementById('fn-status').value;
+  if(note)t.fieldNote=note;
+  if(status==='done'){t.status='done';t.completedAt=new Date().toISOString();}
+  else if(status==='done-followup'){t.status='done';t.completedAt=new Date().toISOString();t.followup=true;
+    // create follow-up task
+    const prop=PROPS.find(p=>p.code===t.property);
+    tasks.unshift({id:Date.now()+Math.random(),desc:`FOLLOW-UP: ${t.desc}`,property:t.property,propertyName:t.propertyName,cluster:t.cluster,sublocation:t.sublocation||'',notes:`Follow-up from completed task. Field note: ${note}`,priority:'high',duration:'',date:'',time:'',followup:true,status:'pending',assignedTo:null,createdAt:new Date().toISOString(),photos:[],fieldNote:'',isRecurring:false,parentId:t.id});
+  }
+  // 'pending' case: note is saved above, task stays open — just update it
+  saveSingleTask(t);
+  save();renderQueue();updateStats();renderDashboard();closeFNModal();toast('Note saved ✓');
+}
+
+// ══════════════════════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════════════════════
+function openLB(photos, idx){
+  lbPhotos = photos.filter(s => typeof s === 'string' && s.startsWith('http'));
+  if(!lbPhotos.length) return;
+  lbIdx = idx || 0;
+  renderLB();
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLB(){
+  document.getElementById('lightbox').classList.remove('open');
+  lbPhotos = []; lbIdx = 0;
+}
+function lbNav(dir){
+  lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
+  renderLB();
+}
+function renderLB(){
+  document.getElementById('lb-img').src = lbPhotos[lbIdx];
+  document.getElementById('lb-cap').textContent = lbPhotos.length > 1 ? `${lbIdx + 1} / ${lbPhotos.length}` : '';
+  // Hide nav arrows if only one photo
+  const nav = document.querySelector('.lb-nav');
+  if(nav) nav.style.display = lbPhotos.length > 1 ? 'flex' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// PHOTOS
+// ══════════════════════════════════════════════════════════════
+async function uploadToCloudinary(file) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append("upload_preset", "maintenance_uploads");
+
+    try {
+
+        const response = await fetch(
+            "https://api.cloudinary.com/v1_1/dmeiujqfl/image/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        return data.secure_url;
+
+    } catch (error) {
+
+        console.error("Cloudinary upload failed:", error);
+        return null;
+    }
+          
+           }
+
+function handleDrop(e){
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('photo-drop').classList.remove('drag-over');
+  const files = e.dataTransfer && e.dataTransfer.files;
+  if(files && files.length) handlePhotoFiles(files);
+}
+
+function renderPhotoStrip(){
+  const strip = document.getElementById('photo-strip');
+  if(!strip) return;
+  strip.innerHTML = pendingPhotos
+    .map((url,i) => url === 'loading'
+      ? `<div class="photo-wrap" style="display:flex;align-items:center;justify-content:center;background:var(--surface2);"><span style="font-size:10px;color:var(--text3);">...</span></div>`
+      : `<div class="photo-wrap"><img src="${url}" alt="photo ${i+1}"><button class="photo-rm" onclick="removePendingPhoto(${i})">\u2715</button></div>`
+    ).join('');
+}
+
+function removePendingPhoto(i){
+  pendingPhotos.splice(i,1);
+  renderPhotoStrip();
+}
+
+function handlePhotoFiles(files){
+  Array.from(files).forEach(async (file) => {
+    if(!file.type.startsWith('image/')) return;
+    const placeholderIdx = pendingPhotos.length;
+    pendingPhotos.push('loading');
+    renderPhotoStrip();
+    const imageUrl = await uploadToCloudinary(file);
+    if(!imageUrl){
+      pendingPhotos.splice(placeholderIdx, 1);
+    } else {
+      pendingPhotos[placeholderIdx] = imageUrl;
+    }
+    renderPhotoStrip();
+  });
+  document.getElementById('pf-input').value='';
+}
+
+// ══════════════════════════════════════════════════════════════
+// TEMPLATES
+// ══════════════════════════════════════════════════════════════
+function renderTemplates(){
+  const tg=document.getElementById('template-grid');
+  if(!templates.length){tg.innerHTML='<div class="empty-state"><div class="icon">📄</div>No templates yet.</div>';return;}
+  tg.innerHTML=templates.map(t=>`
+    <div class="tpl-card" onclick="applyTemplate('${t.id}')">
+      <div class="tpl-name">${esc(t.name)}</div>
+      ${t.property?`<div class="tpl-prop">${esc(t.property)}</div>`:'<div class="tpl-prop" style="color:var(--text3)">Any property</div>'}
+      <div class="tpl-meta">${t.priority?`${t.priority} · `:''} ${t.duration||''}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();applyTemplate('${t.id}')">+ Add to Queue</button>
+        <button class="btn btn-danger" onclick="event.stopPropagation();deleteTemplate('${t.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function applyTemplate(id){
+  const t=templates.find(t=>t.id===id);if(!t)return;
+  if(!t.property){
+    // need to ask for property — pre-fill form and switch to queue
+    document.getElementById('t-desc').value=t.name;
+    document.getElementById('t-sub').value=t.sublocation||'';
+    document.getElementById('t-notes').value=t.notes||'';
+    document.getElementById('t-priority').value=t.priority||'routine';
+    document.getElementById('t-dur').value=t.duration||'';
+    showPanel('queue',document.querySelector('.tab[onclick*="\'queue\'"]'));
+    document.getElementById('t-prop').focus();
+    toast('Template loaded — select a property to add');
+  } else {
+    addTask({desc:t.name,property:t.property,sublocation:t.sublocation||'',notes:t.notes||'',priority:t.priority||'routine',duration:t.duration||'',photos:[]});
+  }
+  closeTplModal();
+}
+
+function openTemplateModal(){
+  const list=document.getElementById('tpl-modal-list');
+  list.innerHTML=templates.map(t=>`<div class="cb-item" onclick="applyTemplate('${t.id}')">
+    <div><div style="font-size:13px;font-weight:500;">${esc(t.name)}</div><div style="font-size:11px;color:var(--text2);">${t.property||'Any property'} · ${t.priority} ${t.duration?'· '+t.duration:''}</div></div>
+  </div>`).join('');
+  document.getElementById('tpl-modal').classList.add('open');
+}
+function closeTplModal(){document.getElementById('tpl-modal').classList.remove('open');}
+
+function openAddTemplate(){
+  ['atpl-name','atpl-sub','atpl-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('atpl-prop').value='';
+  document.getElementById('atpl-priority').value='routine';
+  document.getElementById('atpl-dur').value='';
+  document.getElementById('addtpl-modal').classList.add('open');
+}
+function closeAddTemplate(){document.getElementById('addtpl-modal').classList.remove('open');}
+function saveTemplate(){
+  const name=document.getElementById('atpl-name').value.trim();
+  if(!name){toast('Please enter a template name.');return;}
+  templates.push({id:'tpl-'+Date.now(),name,property:document.getElementById('atpl-prop').value,sublocation:document.getElementById('atpl-sub').value.trim(),notes:document.getElementById('atpl-notes').value.trim(),priority:document.getElementById('atpl-priority').value,duration:document.getElementById('atpl-dur').value});
+  saveTpl();renderTemplates();closeAddTemplate();toast('Template saved ✓');
+}
+function deleteTemplate(id){if(!confirm('Delete this template?'))return;templates=templates.filter(t=>t.id!==id);deleteTplRemote(id);saveTpl();renderTemplates();}
+
+// ══════════════════════════════════════════════════════════════
+// SEASONAL CHECKLISTS
+// ══════════════════════════════════════════════════════════════
+function renderSeasonBtns(){
+  document.getElementById('season-btns').innerHTML=Object.entries(SEASONAL_CHECKLISTS).map(([key,s])=>`
+    <button class="season-btn" onclick="loadSeason('${key}')">
+      <span class="season-icon">${s.icon}</span>
+      <div style="font-size:13px;font-weight:600;">${s.label} Checklist</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">${s.tasks.length} tasks — all properties</div>
+    </button>`).join('');
+}
+
+function loadSeason(key){
+  const s=SEASONAL_CHECKLISTS[key];
+  if(!confirm(`Load ${s.label} checklist? This will add ${s.tasks.length} tasks × 15 properties = ${s.tasks.length*PROPS.length} tasks to the queue.`))return;
+  let count=0;
+  PROPS.forEach(prop=>{
+    s.tasks.forEach(task=>{
+      const prop2=PROPS.find(p=>p.code===prop.code);
+      tasks.unshift({id:Date.now()+Math.random()*1e9+count*997,desc:task.desc,property:prop.code,propertyName:prop.name,cluster:prop.cluster,sublocation:'',notes:task.notes||'',priority:task.priority||'routine',duration:'',date:'',time:'',followup:false,status:'pending',assignedTo:null,createdAt:new Date().toISOString(),photos:[],fieldNote:'',isRecurring:false});
+      count++;
+    });
+  });
+  save();renderQueue();updateStats();renderDashboard();toast(`${s.label} checklist loaded — ${count} tasks added ✓`);
+}
+
+// ══════════════════════════════════════════════════════════════
+// RECURRING TASKS
+// ══════════════════════════════════════════════════════════════
+function addRecurring(){
+  const desc=document.getElementById('r-desc').value.trim();
+  const propCode=document.getElementById('r-prop').value;
+  if(!desc){toast('Please enter a description.');return;}
+  if(!propCode){toast('Please select a property.');return;}
+  const prop=PROPS.find(p=>p.code===propCode);
+  recurring.push({id:'rec-'+Date.now(),desc,property:propCode,propertyName:prop?prop.name:propCode,cluster:prop?prop.cluster:'',sublocation:document.getElementById('r-sub').value.trim(),notes:document.getElementById('r-notes').value.trim(),priority:document.getElementById('r-priority').value,frequency:document.getElementById('r-freq').value,nextDue:document.getElementById('r-next').value||todayStr,active:true});
+  saveRec();renderRecurring();
+  ['r-desc','r-sub','r-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('r-prop').value='';
+  document.getElementById('r-freq').value='weekly';
+  document.getElementById('r-next').value=todayStr;
+  toast('Recurring task added ✓');
+}
+
+function renderRecurring(){
+  const el=document.getElementById('recurring-list');
+  if(!recurring.length){el.innerHTML='<div class="empty-state"><div class="icon">🔁</div>No recurring tasks yet.</div>';return;}
+  el.innerHTML=recurring.map(r=>`<div class="task-item routine">
+    <div>
+      <div class="task-top"><span class="task-prop">${esc(r.property)}</span><span class="badge badge-recurring">↺ ${r.frequency}</span></div>
+      <div class="task-desc">${esc(r.desc)}</div>
+      ${r.notes?`<div class="task-notes">${esc(r.notes)}</div>`:''}
+      <div class="task-meta"><span class="task-time">Next due: ${fmtDate(r.nextDue)}</span></div>
+    </div>
+    <div class="task-actions" onclick="event.stopPropagation()">
+      <button class="btn btn-secondary btn-sm" onclick="pushRecurring('${r.id}')">→ Queue</button>
+      <button class="btn btn-danger" onclick="deleteRecurring('${r.id}')">✕</button>
+    </div>
+  </div>`).join('');
+
+  const dueEl=document.getElementById('recurring-due');
+  const due=recurring.filter(r=>r.nextDue<=todayStr);
+  if(!due.length){dueEl.innerHTML='<div style="color:var(--text3);font-size:12px;font-style:italic;">No recurring tasks due today.</div>';return;}
+  dueEl.innerHTML=due.map(r=>`<div class="task-item high">
+    <div>
+      <div class="task-top"><span class="task-prop">${esc(r.property)}</span><span class="badge badge-recurring">↺ ${r.frequency}</span><span class="badge badge-urgent">Due</span></div>
+      <div class="task-desc">${esc(r.desc)}</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="pushRecurring('${r.id}')">→ Push to Queue</button>
+  </div>`).join('');
+}
+
+function pushRecurring(id){
+  const r=recurring.find(r=>r.id===id);if(!r)return;
+  addTask({desc:r.desc,property:r.property,sublocation:r.sublocation,notes:r.notes,priority:r.priority,isRecurring:true,photos:[]});
+  // advance next due date
+  const d=new Date(r.nextDue+'T12:00:00');
+  const freq={daily:1,weekly:7,biweekly:14,monthly:30,quarterly:90};
+  d.setDate(d.getDate()+(freq[r.frequency]||7));
+  r.nextDue=d.toISOString().slice(0,10);
+  saveRec();renderRecurring();toast('Pushed to queue — next due date updated ✓');
+}
+
+function pushAllDue(){
+  const due=recurring.filter(r=>r.nextDue<=todayStr);
+  if(!due.length){toast('No recurring tasks due.');return;}
+  due.forEach(r=>pushRecurring(r.id));
+  toast(`${due.length} recurring task(s) pushed to queue ✓`);
+}
+
+function deleteRecurring(id){if(!confirm('Delete this recurring task?'))return;recurring=recurring.filter(r=>r.id!==id);deleteRecRemote(id);saveRec();renderRecurring();}
+
+// ══════════════════════════════════════════════════════════════
+// GENERATE / DAILY LISTS
+// ══════════════════════════════════════════════════════════════
+function distMiles(la1,ln1,la2,ln2){const R=3958.8,dLa=(la2-la1)*Math.PI/180,dLn=(ln2-ln1)*Math.PI/180,a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLn/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function maxSpread(ids){const props=ids.map(id=>{const t=tasks.find(t=>t.id==id);return t?PROPS.find(p=>p.code===t.property):null;}).filter(Boolean);let max=0;for(let i=0;i<props.length;i++)for(let j=i+1;j<props.length;j++)max=Math.max(max,distMiles(props[i].lat,props[i].lng,props[j].lat,props[j].lng));return max;}
+function updateTravelWarnings(){['dan','skender'].forEach(tech=>{const ids=dayQueues[tech];const wE=document.getElementById(`warn-${tech}`);const oE=document.getElementById(`ok-${tech}`);wE.style.display='none';oE.style.display='none';if(!ids.length)return;const clusters=[...new Set(ids.map(id=>{const t=tasks.find(t=>t.id==id);return t?t.cluster:null;}).filter(Boolean))];const spread=maxSpread(ids);if(spread>25){wE.style.display='block';wE.innerHTML=`⚠ <strong>Large spread (~${Math.round(spread)} mi)</strong> — spans ${clusters.map(c=>CLUSTER_NAMES[c]).join(' + ')}.`;}else if(clusters.length===1){oE.style.display='block';oE.innerHTML=`✓ All in <strong>${CLUSTER_NAMES[clusters[0]]}</strong> — good routing.`;}else if(spread<=15){oE.style.display='block';oE.innerHTML=`✓ Properties within ~${Math.round(spread)} mi — reasonable.`;}else{wE.style.display='block';wE.innerHTML=`⚠ Multiple areas (~${Math.round(spread)} mi): ${clusters.map(c=>CLUSTER_NAMES[c]).join(' + ')}.`;}});}
+
+function getFitHint(desc){const d=(desc||'').toLowerCase();const ds=['paint','drywall','repair','caulk','install','construct','fix','replace','concrete','tile','door','window','roof','hvac','heat','plumb','electric','carpent'];const ss=['inspect','check','clean','trash','bulb','salt','shovel','leaf','photo','picture','key','lock','tag','battery','soap','paper','sweep','measure','general'];const ds2=ds.filter(k=>d.includes(k)).length;const ss2=ss.filter(k=>d.includes(k)).length;if(ds2>ss2)return`<span class="fit-dan">→ Dan</span>`;if(ss2>ds2)return`<span class="fit-skender">→ Skender</span>`;return'';}
+
+function renderAssignPanels(){
+  const pending=tasks.filter(t=>t.status==='pending');
+  pending.sort((a,b)=>{const po={urgent:0,high:1,routine:2};if(po[a.priority]!==po[b.priority])return po[a.priority]-po[b.priority];const co={plymouth:0,ferndale:1,westbloom:2,outer:3};return(co[a.cluster]??9)-(co[b.cluster]??9);});
+  ['dan','skender'].forEach(tech=>{
+    const el=document.getElementById(`${tech}-select`);
+    if(!pending.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px;font-style:italic;">No pending tasks.</div>';return;}
+    const byCluster={};pending.forEach(t=>{const c=t.cluster||'other';if(!byCluster[c])byCluster[c]=[];byCluster[c].push(t);});
+    let html='';
+    CLUSTER_ORDER.forEach(c=>{
+      if(!byCluster[c])return;
+      html+=`<div class="cg-label">${CLUSTER_NAMES[c]||c}</div>`;
+      byCluster[c].forEach(t=>{
+        const checked=dayQueues[tech].includes(t.id)?'checked':'';
+        const pIcon={urgent:'🔴',high:'🟡',routine:'⚪'}[t.priority];
+        const tid=JSON.stringify(t.id);
+        html+=`<div class="cb-item"><input type="checkbox" id="cb-${tech}-${t.id}" ${checked} onchange="toggleAssign('${tech}',${tid},this.checked)" /><label for="cb-${tech}-${t.id}"><span class="task-prop" style="font-size:11px;">${esc(t.property)}${t.sublocation?' / '+esc(t.sublocation):''}</span> ${pIcon} ${esc(t.desc)} ${getFitHint(t.desc)} ${t.time?`<span class="task-time" style="font-size:10px;"> @ ${fmt12(t.time)}</span>`:''} ${t.duration?`<span style="font-size:10px;color:var(--text3)"> ~${t.duration}</span>`:''}</label></div>`;
+      });
+    });
+    el.innerHTML=html;
+  });
+  renderDayQueues();updateTravelWarnings();
+}
+
+function toggleAssign(tech,id,checked){const other=tech==='dan'?'skender':'dan';if(checked){if(dayQueues[other].includes(id)){dayQueues[other]=dayQueues[other].filter(i=>i!=id);const cb=document.getElementById(`cb-${other}-${id}`);if(cb)cb.checked=false;}if(!dayQueues[tech].includes(id))dayQueues[tech].push(id);}else{dayQueues[tech]=dayQueues[tech].filter(i=>i!=id);}saveDQ();renderDayQueues();updateTravelWarnings();}
+
+function renderDayQueues(){['dan','skender'].forEach(tech=>{const el=document.getElementById(`${tech}-queue`);const ids=dayQueues[tech];if(!ids.length){el.innerHTML='<div class="empty-q">No tasks selected.</div>';return;}el.innerHTML=ids.map(id=>{const t=tasks.find(t=>t.id==id);if(!t)return'';return`<div class="dq-item"><div class="dq-left"><div class="dq-prop">${esc(t.property)}${t.sublocation?' / '+esc(t.sublocation):''}</div><div style="font-size:12px;">${esc(t.desc)}</div></div><button class="btn btn-danger" style="padding:2px 6px;font-size:10px;" onclick="toggleAssign('${tech}',${JSON.stringify(id)},false);document.getElementById('cb-${tech}-${id}').checked=false;">✕</button></div>`;}).join('');});}
+
+function clearDayQueues(){dayQueues={dan:[],skender:[]};saveDQ();renderAssignPanels();document.getElementById('output-section').style.display='none';document.getElementById('ai-box').style.display='none';}
+
+async function autoSchedule(){
+  const pending=tasks.filter(t=>t.status==='pending');
+  if(!pending.length){toast('No pending tasks to schedule.');return;}
+  const btn=document.getElementById('auto-btn');btn.textContent='✦ Thinking...';btn.disabled=true;
+  document.getElementById('ai-box').style.display='none';
+  const taskList=pending.map((t,i)=>({index:i,id:t.id,property:t.property,area:CLUSTER_NAMES[t.cluster]||t.cluster,sublocation:t.sublocation||'',description:t.desc,priority:t.priority,duration:t.duration||'unknown',date:t.date||'',time:t.time||'',followup:t.followup||false}));
+  const prompt=`You are a scheduling assistant for First Holding Management Company in Michigan. Assign today's maintenance tasks between two techs for ONE workday.
+DAN: Larger repairs, painting, drywall, skilled installs, carpentry, plumbing, electrical.
+SKENDER: Routine checks, inspections, cleanups, trash, light maintenance, photos, general checks.
+CLUSTERS: Plymouth/Ann Arbor (DAI,GRN,HLD,PGD,PLY), Ferndale/Pleasant Ridge (IRO,MIN,LMC), West Bloomfield/Southfield (11G,ORM,WBCC), Outer Ring (DEN,HSQ,ROC,WAT).
+RULES: 1) Urgent tasks assigned today. 2) Group nearby properties to same tech. 3) Balance workloads. 4) Respect timed appointments. 5) OK to leave low-priority routines unscheduled if day is full.
+TASKS: ${JSON.stringify(taskList)}
+Respond ONLY with JSON: {"dan":[task id values],"skender":[task id values],"reasoning":"2-3 sentences"}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const result=JSON.parse(raw);
+    dayQueues.dan=(result.dan||[]).filter(id=>pending.find(t=>t.id==id)).map(id=>pending.find(t=>t.id==id).id);
+    dayQueues.skender=(result.skender||[]).filter(id=>pending.find(t=>t.id==id)).map(id=>pending.find(t=>t.id==id).id);
+    saveDQ();renderAssignPanels();renderDayQueues();updateTravelWarnings();
+    if(result.reasoning){document.getElementById('ai-box').style.display='block';document.getElementById('ai-text').textContent=result.reasoning;}
+    toast('Auto-schedule complete — review and adjust ✓');
+  }catch(err){toast('Auto-schedule failed — try again.');console.error(err);}
+  finally{btn.textContent='✦ Auto-Schedule';btn.disabled=false;}
+}
+
+function generateLists(){
+  const dateVal=document.getElementById('gen-date').value;
+  const dateStr=dateVal?fmtDateFull(dateVal):'Tomorrow';
+  const greeting=document.getElementById('gen-greeting').value.trim()||`${dateStr} can you please:`;
+  genOutputs.dan=buildList('Dan',optimizeRoute(dayQueues.dan),greeting);
+  genOutputs.skender=buildList('Skender',optimizeRoute(dayQueues.skender),greeting);
+  // Only mark tasks assigned if they are actually in a queue
+  dayQueues.dan.forEach(id=>{const t=tasks.find(t=>t.id==id);if(t){t.status='assigned';t.assignedTo='dan';}});
+  dayQueues.skender.forEach(id=>{const t=tasks.find(t=>t.id==id);if(t){t.status='assigned';t.assignedTo='skender';}});
+  save();saveDQ();renderQueue();updateStats();renderDashboard();
+  document.getElementById('output-section').style.display='block';
+  switchOutput('dan');toast('Lists generated ✓');
+  document.getElementById('output-section').scrollIntoView({behavior:'smooth'});
+}
+
+function buildList(name,ids,greeting){
+  if(!ids.length)return`Hi ${name},\n\nNo tasks assigned for this day.\n\nThank you!!`;
+  const items=ids.map(id=>tasks.find(t=>t.id==id)).filter(Boolean);
+  items.sort((a,b)=>{if(a.time&&b.time)return a.time.localeCompare(b.time);if(a.time)return -1;if(b.time)return 1;const co={plymouth:0,ferndale:1,westbloom:2,outer:3};return(co[a.cluster]??9)-(co[b.cluster]??9);});
+  const grouped={};items.forEach(t=>{if(!grouped[t.property])grouped[t.property]=[];grouped[t.property].push(t);});
+  let out=`Hi ${name},\n\n${greeting}\n`;
+  Object.entries(grouped).forEach(([prop,pitems])=>{
+    out+=`\n${prop}:\n`;
+    const subs={};pitems.forEach(t=>{const k=t.sublocation||'__none__';if(!subs[k])subs[k]=[];subs[k].push(t);});
+    Object.entries(subs).forEach(([sub,sitems])=>{
+      if(sub!=='__none__')out+=`  - ${sub}:\n`;
+      sitems.forEach(t=>{
+        const tp=t.time?`At ${fmt12(t.time)} `:'';
+        const ind=sub!=='__none__'?'    o ':'  - ';
+        out+=`${ind}${tp}${t.desc}\n`;
+        if(t.notes)t.notes.split('\n').forEach(l=>{if(l.trim())out+=`       ➤ ${l.trim()}\n`;});
+      });
+    });
+  });
+  return out+`\nThank you!!`;
+}
+
+function switchOutput(tech){document.getElementById('output-text').textContent=genOutputs[tech]||'(no tasks assigned)';document.getElementById('pill-dan').className='tab-pill'+(tech==='dan'?' active dan':'');document.getElementById('pill-skender').className='tab-pill'+(tech==='skender'?' active skender':'');}
+function copyOutput(){navigator.clipboard.writeText(document.getElementById('output-text').textContent).then(()=>toast('Copied ✓'));}
+
+// ══════════════════════════════════════════════════════════════
+// PDF EXPORT
+// ══════════════════════════════════════════════════════════════
+function exportPDF(){
+  const text=document.getElementById('output-text').textContent;
+  const tech=document.getElementById('pill-dan').classList.contains('active')?'Dan':'Skender';
+  const dateVal=document.getElementById('gen-date').value;
+  const dateStr=dateVal?fmtDateFull(dateVal):new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  printDoc(`Daily List — ${tech} — ${dateStr}`, `<pre style="font-family:monospace;font-size:13px;line-height:1.8;white-space:pre-wrap;">${text.replace(/</g,'&lt;')}</pre>`);
+}
+
+function exportHistoryPDF(){
+  const done=tasks.filter(t=>t.status==='done').sort((a,b)=>(b.completedAt||'').localeCompare(a.completedAt||''));
+  if(!done.length){toast('No completed tasks to export.');return;}
+  const rows=done.map(t=>`<tr><td>${esc(t.property)}</td><td>${esc(t.desc)}</td><td>${t.assignedTo||'—'}</td><td>${t.completedAt?new Date(t.completedAt).toLocaleDateString():'—'}</td><td>${t.fieldNote?esc(t.fieldNote):'—'}</td></tr>`).join('');
+  printDoc('Completed Tasks — First Holding',`<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f0f0f0;"><th style="padding:6px 8px;text-align:left;border:1px solid #ccc;">Property</th><th style="padding:6px 8px;text-align:left;border:1px solid #ccc;">Task</th><th style="padding:6px 8px;text-align:left;border:1px solid #ccc;">Tech</th><th style="padding:6px 8px;text-align:left;border:1px solid #ccc;">Completed</th><th style="padding:6px 8px;text-align:left;border:1px solid #ccc;">Field Note</th></tr></thead><tbody>${rows}</tbody></table>`);
+}
+
+function printDoc(title, bodyHTML){
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111;}h1{font-size:18px;margin-bottom:24px;color:#333;border-bottom:2px solid #e8c547;padding-bottom:8px;}table{width:100%;border-collapse:collapse;}td,th{padding:6px 8px;border:1px solid #ccc;text-align:left;vertical-align:top;}tr:nth-child(even){background:#f9f9f9;}@media print{body{padding:16px;}}</style></head><body><h1>${title}</h1>${bodyHTML}<div style="margin-top:32px;font-size:10px;color:#999;">First Holding Management Company · Generated ${new Date().toLocaleString()}</div></body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROPERTIES
+// ══════════════════════════════════════════════════════════════
+function renderPropGrid(){
+  const cc={plymouth:'cluster-plymouth',ferndale:'cluster-ferndale',westbloom:'cluster-westbloom',outer:'cluster-outer'};
+  document.getElementById('prop-grid').innerHTML=PROPS.map(p=>`<div class="prop-card"><div class="prop-code">${p.code}</div><div class="prop-name">${p.name}</div><div class="prop-addr">${p.address}</div><span class="cluster-badge ${cc[p.cluster]}">${CLUSTER_NAMES[p.cluster]}</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════════════════
+function renderHistory(){
+  const done=tasks.filter(t=>t.status==='done').sort((a,b)=>(b.completedAt||'').localeCompare(a.completedAt||''));
+  const el=document.getElementById('history-list');
+  if(!done.length){el.innerHTML='<div class="empty-state"><div class="icon">✅</div>No completed tasks yet.</div>';return;}
+  el.innerHTML=done.map(taskHTML).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════════════════════
+function updateStats(){
+  document.getElementById('s-queue').textContent=tasks.filter(t=>t.status==='pending').length;
+  document.getElementById('s-urgent').textContent=tasks.filter(t=>t.status==='pending'&&t.priority==='urgent').length;
+  document.getElementById('s-followup').textContent=tasks.filter(t=>t.followup&&t.status!=='done').length;
+  document.getElementById('s-done').textContent=tasks.filter(t=>t.status==='done').length;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS / NAV
+// ══════════════════════════════════════════════════════════════
+function showPanelByName(name){
+  const tabEl = document.querySelector(`.tab[onclick*="'${name}'"]`);
+  showPanel(name, tabEl);
+}
+
+function showPanel(name,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  if(name==='generate')renderAssignPanels();
+  if(name==='history')renderHistory();
+  if(name==='dashboard')renderDashboard();
+  if(name==='recurring')renderRecurring();
+  if(name==='templates')renderTemplates();
+  if(name==='map')loadLeafletAndRender();
+  if(name==='tasks')renderActiveTasks();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASK DRILL-DOWN MODAL
+// ══════════════════════════════════════════════════════════════
+function openTaskModal(filter){
+  const titles={
+    pending:'Pending Tasks', overdue:'Overdue Tasks', followup:'Follow-Ups Required',
+    done:'Completed Tasks', assigned:'Assigned — In Progress', urgent:'Urgent Tasks'
+  };
+  let filtered;
+  if(filter==='pending')   filtered=tasks.filter(t=>t.status==='pending');
+  else if(filter==='overdue')  filtered=tasks.filter(t=>t.status==='pending'&&t.date&&t.date<todayStr);
+  else if(filter==='followup') filtered=tasks.filter(t=>t.followup&&t.status!=='done');
+  else if(filter==='done')     filtered=tasks.filter(t=>t.status==='done').sort((a,b)=>(b.completedAt||'').localeCompare(a.completedAt||''));
+  else if(filter==='assigned') filtered=tasks.filter(t=>t.status==='assigned');
+  else if(filter==='urgent')   filtered=tasks.filter(t=>t.status==='pending'&&t.priority==='urgent');
+  else filtered=[];
+
+  document.getElementById('task-modal-title').textContent=titles[filter]||'Tasks';
+  document.getElementById('task-modal-count').textContent=`(${filtered.length})`;
+  const body=document.getElementById('task-modal-body');
+  if(!filtered.length){
+    body.innerHTML=`<div class="empty-state"><div class="icon">✅</div>No tasks in this category.</div>`;
+  } else {
+    body.innerHTML=filtered.map(taskHTML).join('');
+  }
+  document.getElementById('task-modal-overlay').classList.add('open');
+}
+function closeTaskModal(){document.getElementById('task-modal-overlay').classList.remove('open');}
+
+// ══════════════════════════════════════════════════════════════
+// MAP VIEW — Leaflet / OpenStreetMap
+// ══════════════════════════════════════════════════════════════
+let leafletMap = null;
+let leafletMarkers = [];
+
+function renderMap(){
+  const container = document.getElementById('map-container');
+  if(!container) return;
+
+  // Build status per property
+  const propStatus = {};
+  PROPS.forEach(p => propStatus[p.code] = 'clear');
+  tasks.forEach(t => {
+    if(t.status === 'done') return;
+    const cur = propStatus[t.property];
+    if(t.priority === 'urgent') propStatus[t.property] = 'urgent';
+    else if(t.status === 'assigned' && cur !== 'urgent') propStatus[t.property] = 'assigned';
+    else if(cur === 'clear') propStatus[t.property] = 'pending';
+  });
+
+  const colors = { urgent:'#c0392b', pending:'#c9a96e', assigned:'#2d5a9e', clear:'#1e7a4e' };
+  const taskCounts = {};
+  PROPS.forEach(p => { taskCounts[p.code] = tasks.filter(t => t.property === p.code && t.status !== 'done').length; });
+
+  // Initialize map once
+  if(!leafletMap){
+    leafletMap = L.map('map-container', { zoomControl: true, scrollWheelZoom: true })
+      .setView([42.45, -83.37], 10);
+
+    // Standard OpenStreetMap tiles — most universally supported
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(leafletMap);
+  }
+
+  // Clear old markers
+  leafletMarkers.forEach(m => m.remove());
+  leafletMarkers = [];
+
+  // Add a marker for each property
+  PROPS.forEach(p => {
+    const color = colors[propStatus[p.code]] || colors.clear;
+    const count = taskCounts[p.code];
+    const status = propStatus[p.code];
+
+    // Custom SVG pin
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44">
+        <circle cx="18" cy="18" r="16" fill="${color}" fill-opacity="0.15" stroke="${color}" stroke-width="2"/>
+        <circle cx="18" cy="18" r="10" fill="${color}"/>
+        ${count > 0 ? `<circle cx="28" cy="8" r="8" fill="white" stroke="${color}" stroke-width="1.5"/>
+        <text x="28" y="12" text-anchor="middle" font-size="8" fill="${color}" font-family="sans-serif" font-weight="bold">${count}</text>` : ''}
+        <polygon points="18,44 12,28 24,28" fill="${color}"/>
+      </svg>`;
+
+    const icon = L.divIcon({
+      html: svg,
+      className: '',
+      iconSize: [36, 44],
+      iconAnchor: [18, 44],
+      popupAnchor: [0, -44]
+    });
+
+    const propTasks = tasks.filter(t => t.property === p.code && t.status !== 'done');
+    const taskLines = propTasks.length
+      ? propTasks.slice(0, 5).map(t => {
+          const dot = {urgent:'🔴', high:'🟡', routine:'⚪'}[t.priority] || '⚪';
+          return `<div style="padding:3px 0;font-size:12px;border-bottom:1px solid #f0ece8;">${dot} ${t.desc.slice(0,50)}${t.desc.length>50?'…':''}</div>`;
+        }).join('') + (propTasks.length > 5 ? `<div style="font-size:11px;color:#8a7d74;padding-top:4px;">+${propTasks.length-5} more tasks</div>` : '')
+      : '<div style="font-size:12px;color:#7a9e8e;">✓ No open tasks</div>';
+
+    const popup = L.popup({ maxWidth: 280, className: 'fh-popup' }).setContent(`
+      <div style="font-family:'DM Sans',sans-serif;padding:4px;">
+        <div style="font-weight:700;font-size:13px;color:#2d2520;margin-bottom:2px;">${p.name}</div>
+        <div style="font-size:11px;color:#8a7d74;margin-bottom:10px;">${p.address}</div>
+        ${taskLines}
+        ${propTasks.length ? `<button onclick="openTaskModalForProp('${p.code}')" style="margin-top:10px;width:100%;padding:7px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">View All Tasks →</button>` : ''}
+      </div>
+    `);
+
+    const marker = L.marker([p.lat, p.lng], { icon }).addTo(leafletMap).bindPopup(popup);
+    leafletMarkers.push(marker);
+  });
+
+  // Force map to recalculate size after tab becomes visible
+  setTimeout(() => { leafletMap.invalidateSize(); }, 300);
+}
+
+function openTaskModalForProp(code){
+  const prop = PROPS.find(p => p.code === code);
+  const propTasks = tasks.filter(t => t.property === code && t.status !== 'done');
+  document.getElementById('task-modal-title').textContent = prop ? prop.name : code;
+  document.getElementById('task-modal-count').textContent = `(${propTasks.length} open)`;
+  const body = document.getElementById('task-modal-body');
+  if(!propTasks.length){
+    body.innerHTML = `<div class="empty-state"><div class="icon">✅</div>No open tasks at this property.</div>`;
+  } else {
+    body.innerHTML = propTasks.map(taskHTML).join('');
+  }
+  // Close any open popup first
+  if(leafletMap) leafletMap.closePopup();
+  document.getElementById('task-modal-overlay').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ROUTE OPTIMIZATION (sort by geo proximity within cluster)
+// ══════════════════════════════════════════════════════════════
+function optimizeRoute(ids){
+  if(ids.length<=1) return ids;
+  const taskProps=ids.map(id=>{
+    const t=tasks.find(t=>t.id==id);
+    const p=t?PROPS.find(p=>p.code===t.property):null;
+    return{id,lat:p?p.lat:0,lng:p?p.lng:0,time:t?t.time:''};
+  });
+  // Timed tasks come first, sorted by time
+  const timed=taskProps.filter(t=>t.time).sort((a,b)=>a.time.localeCompare(b.time));
+  const untimed=taskProps.filter(t=>!t.time);
+  // Greedy nearest-neighbor for untimed
+  if(untimed.length>1){
+    const sorted=[untimed[0]];
+    const rem=untimed.slice(1);
+    while(rem.length){
+      const last=sorted[sorted.length-1];
+      let nearest=0,minD=Infinity;
+      rem.forEach((r,i)=>{
+        const d=distMiles(last.lat,last.lng,r.lat,r.lng);
+        if(d<minD){minD=d;nearest=i;}
+      });
+      sorted.push(rem.splice(nearest,1)[0]);
+    }
+    return[...timed,...sorted].map(t=>t.id);
+  }
+  return[...timed,...untimed].map(t=>t.id);
+}
+
+// Route optimization is applied inside generateLists directly
+
+// ══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════
+// Prevent browser from opening dropped files in a new tab globally
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  // Only prevent default if the drop is NOT inside our photo-drop zone
+  if(!e.target.closest('#photo-drop')) e.preventDefault();
+});
+
+document.addEventListener('keydown',e=>{
+  // Escape closes modals
+  if(e.key==='Escape'){
+    closeTaskModal();
+    closeFNModal();
+    closeTplModal();
+    closeAddTemplate();
+    closeEditModal();
+  }
+  // Enter on task desc field submits if property is selected
+  if(e.key==='Enter'&&document.activeElement&&document.activeElement.id==='t-desc'){
+    const prop=document.getElementById('t-prop').value;
+    if(prop) addTask();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// ACTIVE TASKS VIEW
+// ══════════════════════════════════════════════════════════════
+function renderActiveTasks(){
+  const fp  = document.getElementById('at-priority')?.value || '';
+  const fc  = document.getElementById('at-cluster')?.value  || '';
+  const ft  = document.getElementById('at-tech')?.value     || '';
+  const q   = (document.getElementById('at-search')?.value  || '').trim().toLowerCase();
+
+  let active = tasks.filter(t => t.status !== 'done');
+
+  if(fp) active = active.filter(t => t.priority === fp);
+  if(fc) active = active.filter(t => t.cluster  === fc);
+  if(ft === 'unassigned') active = active.filter(t => !t.assignedTo);
+  else if(ft) active = active.filter(t => t.assignedTo === ft);
+  if(q)  active = active.filter(t =>
+    t.property.toLowerCase().includes(q) ||
+    t.desc.toLowerCase().includes(q) ||
+    (t.propertyName||'').toLowerCase().includes(q) ||
+    (t.sublocation||'').toLowerCase().includes(q)
+  );
+
+  // Sort: urgent first, then high, then routine; within each by date
+  active.sort((a,b)=>{
+    const po={urgent:0,high:1,routine:2};
+    if(po[a.priority]!==po[b.priority]) return po[a.priority]-po[b.priority];
+    if(a.date&&b.date) return a.date.localeCompare(b.date);
+    if(a.date) return -1; if(b.date) return 1;
+    return 0;
+  });
+
+  const countEl = document.getElementById('tasks-count');
+  if(countEl) countEl.textContent = `(${active.length} active)`;
+
+  const el = document.getElementById('active-tasks-list');
+  if(!el) return;
+  if(!active.length){
+    el.innerHTML=`<div class="empty-state"><div class="icon">✅</div>${tasks.length?'No active tasks match this filter.':'No tasks yet — add one in Task Queue.'}</div>`;
+    return;
+  }
+  el.innerHTML = active.map(taskHTML).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt12(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')}${h>=12?'PM':'AM'}`;}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}/${day}/${y}`;}
+function fmtDateFull(d){if(!d)return'Tomorrow';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});}
+
+// ── Leaflet is loaded from <head> — just call renderMap directly ──
+function loadLeafletAndRender(){
+  renderMap();
+}
+</script>
+
+</body></html>
