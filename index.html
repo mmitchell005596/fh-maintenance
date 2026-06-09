@@ -338,7 +338,10 @@ select option{background:var(--surface);}
 .cb-item input[type=checkbox]{width:15px;height:15px;min-width:15px;margin-top:2px;accent-color:var(--accent);}
 .cb-item label{cursor:pointer;line-height:1.45;font-size:12.5px;}
 .cg-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin:12px 0 4px;padding-left:10px;}
-.output-area{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:18px;font-family:var(--font-mono);font-size:12px;line-height:1.8;white-space:pre-wrap;color:var(--text);min-height:180px;margin-top:10px;}
+.output-area{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:18px;font-family:var(--font-mono);font-size:12px;line-height:1.8;color:var(--text);min-height:180px;margin-top:10px;}
+.output-area .output-photos{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px 18px;}
+.output-area .output-photo{width:70px;height:70px;border-radius:6px;object-fit:cover;border:1px solid var(--border);cursor:pointer;}
+.output-area .output-line{white-space:pre-wrap;}
 .tab-pills{display:flex;gap:6px;background:var(--surface2);border-radius:var(--radius-sm);padding:4px;}
 .tab-pill{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:none;border:none;color:var(--text2);transition:all .2s;text-transform:uppercase;letter-spacing:.03em;}
 .tab-pill.active.dan{background:var(--dan);color:#fff;}
@@ -394,7 +397,25 @@ select option{background:var(--surface);}
 .cl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .cl-dot.plymouth{background:var(--success);}.cl-dot.ferndale{background:var(--sky);}.cl-dot.westbloom{background:var(--gold);}.cl-dot.outer{background:var(--skender);}
 
-/* ── MISC ────────────────────────────────────────────── */
+/* ── MINI CALENDAR ───────────────────────────────────── */
+.mini-cal{font-size:11px;user-select:none;}
+.mini-cal table{width:100%;border-collapse:collapse;}
+.mini-cal th{text-align:center;padding:4px 2px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;}
+.mini-cal td{text-align:center;padding:4px 2px;cursor:pointer;border-radius:6px;transition:background .15s;}
+.mini-cal td:hover{background:var(--accent-lt);}
+.mini-cal td.today{background:var(--accent);color:#fff;font-weight:700;border-radius:6px;}
+.mini-cal td.has-tasks{font-weight:700;color:var(--accent);}
+.mini-cal td.has-tasks::after{content:'•';font-size:8px;position:absolute;bottom:1px;left:50%;transform:translateX(-50%);}
+.mini-cal td{position:relative;}
+.mini-cal td.selected{outline:2px solid var(--accent);outline-offset:-1px;border-radius:6px;}
+.mini-cal td.other-month{color:var(--text3);opacity:.4;}
+.cal-entry{padding:7px 10px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);margin-bottom:5px;font-size:11px;}
+.cal-entry-date{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px;}
+.cal-entry-text{color:var(--text);line-height:1.4;}
+.cal-entry-prop{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-right:5px;}
+.cal-add-btn{font-size:10px;padding:3px 8px;margin-top:6px;}
+
+
 .divider{height:1px;background:var(--border);margin:16px 0;}
 .sec-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
 .empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:13px;}
@@ -601,6 +622,37 @@ select option{background:var(--surface);}
     </div>
   </div>
   </div>
+
+  <!-- ── TECH CALENDARS ─────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Tech Calendars — Schedule Tracker</div>
+    <div class="two-col" id="dash-calendars">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--dan);">🔵 Dan</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="calNav('dan',-1)">‹</button>
+            <span id="cal-label-dan" style="font-size:11px;font-weight:600;color:var(--text2);min-width:100px;text-align:center;"></span>
+            <button class="btn btn-secondary btn-sm" onclick="calNav('dan',1)">›</button>
+          </div>
+        </div>
+        <div id="cal-dan" class="mini-cal"></div>
+        <div id="cal-dan-entries" style="margin-top:10px;max-height:180px;overflow-y:auto;"></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--skender);">🟡 Skender</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="calNav('skender',-1)">‹</button>
+            <span id="cal-label-skender" style="font-size:11px;font-weight:600;color:var(--text2);min-width:100px;text-align:center;"></span>
+            <button class="btn btn-secondary btn-sm" onclick="calNav('skender',1)">›</button>
+          </div>
+        </div>
+        <div id="cal-skender" class="mini-cal"></div>
+        <div id="cal-skender-entries" style="margin-top:10px;max-height:180px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════ QUEUE ═══════════════════════ -->
@@ -732,9 +784,10 @@ select option{background:var(--surface);}
         <button class="tab-pill active dan" id="pill-dan" onclick="switchOutput(&#39;dan&#39;)">Dan</button>
         <button class="tab-pill skender" id="pill-skender" onclick="switchOutput(&#39;skender&#39;)">Skender</button>
       </div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" onclick="copyOutput()">📋 Copy</button>
         <button class="btn btn-secondary btn-sm" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="openOutlookEmail(document.getElementById('pill-dan').classList.contains('active')?'dan':'skender')" title="Open as new email in your default mail app (Outlook)">✉️ Open in Outlook</button>
       </div>
     </div>
     <div class="output-area" id="output-text"></div>
@@ -1320,7 +1373,14 @@ const YYYY=today.getFullYear(),MM=String(today.getMonth()+1).padStart(2,'0'),DD=
 const todayStr=`${YYYY}-${MM}-${DD}`;
 ['gen-date','t-date','r-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr;});
 
-renderQueue(); updateStats(); renderDashboard(); renderTemplates(); renderRecurring(); renderSeasonBtns(); renderActiveTasks();
+// ── CALENDAR STATE (must be before initCalendars call) ──
+const calState = {
+  dan:     { year: new Date().getFullYear(), month: new Date().getMonth(), selected: null },
+  skender: { year: new Date().getFullYear(), month: new Date().getMonth(), selected: null },
+};
+let calEntries = { dan: {}, skender: {} };
+
+renderQueue(); updateStats(); renderDashboard(); renderTemplates(); renderRecurring(); renderSeasonBtns(); renderActiveTasks(); initCalendars();
 
 // Connect to Firebase async — UI is already usable from localStorage above
 (async()=>{
@@ -2258,11 +2318,12 @@ function updateTravelWarnings(){['dan','skender'].forEach(tech=>{const ids=dayQu
 function getFitHint(desc){const d=(desc||'').toLowerCase();const ds=['paint','drywall','repair','caulk','install','construct','fix','replace','concrete','tile','door','window','roof','hvac','heat','plumb','electric','carpent'];const ss=['inspect','check','clean','trash','bulb','salt','shovel','leaf','photo','picture','key','lock','tag','battery','soap','paper','sweep','measure','general'];const ds2=ds.filter(k=>d.includes(k)).length;const ss2=ss.filter(k=>d.includes(k)).length;if(ds2>ss2)return`<span class="fit-dan">→ Dan</span>`;if(ss2>ds2)return`<span class="fit-skender">→ Skender</span>`;return'';}
 
 function renderAssignPanels(){
-  const pending=tasks.filter(t=>t.status==='pending');
+  // Include both pending AND already-assigned tasks so nothing is hidden
+  const pending=tasks.filter(t=>t.status==='pending'||t.status==='assigned');
   pending.sort((a,b)=>{const po={urgent:0,high:1,routine:2};if(po[a.priority]!==po[b.priority])return po[a.priority]-po[b.priority];const co={plymouth:0,ferndale:1,westbloom:2,outer:3};return(co[a.cluster]??9)-(co[b.cluster]??9);});
   ['dan','skender'].forEach(tech=>{
     const el=document.getElementById(`${tech}-select`);
-    if(!pending.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px;font-style:italic;">No pending tasks.</div>';return;}
+    if(!pending.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px;font-style:italic;">No tasks.</div>';return;}
     const byCluster={};pending.forEach(t=>{const c=t.cluster||'other';if(!byCluster[c])byCluster[c]=[];byCluster[c].push(t);});
     let html='';
     CLUSTER_ORDER.forEach(c=>{
@@ -2272,7 +2333,8 @@ function renderAssignPanels(){
         const checked=dayQueues[tech].includes(t.id)?'checked':'';
         const pIcon={urgent:'🔴',high:'🟡',routine:'⚪'}[t.priority];
         const tid=JSON.stringify(t.id);
-        html+=`<div class="cb-item"><input type="checkbox" id="cb-${tech}-${t.id}" ${checked} onchange="toggleAssign('${tech}',${tid},this.checked)" /><label for="cb-${tech}-${t.id}"><span class="task-prop" style="font-size:11px;">${esc(t.property)}${t.sublocation?' / '+esc(t.sublocation):''}</span> ${pIcon} ${esc(t.desc)} ${getFitHint(t.desc)} ${t.time?`<span class="task-time" style="font-size:10px;"> @ ${fmt12(t.time)}</span>`:''} ${t.duration?`<span style="font-size:10px;color:var(--text3)"> ~${t.duration}</span>`:''}</label></div>`;
+        const assignedBadge=t.assignedTo?`<span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:4px;background:${t.assignedTo==='dan'?'var(--dan-lt)':'var(--skender-lt)'};color:${t.assignedTo==='dan'?'var(--dan)':'var(--skender)'};">${t.assignedTo==='dan'?'Dan':'Skender'}</span>`:'';
+        html+=`<div class="cb-item"><input type="checkbox" id="cb-${tech}-${t.id}" ${checked} onchange="toggleAssign('${tech}',${tid},this.checked)" /><label for="cb-${tech}-${t.id}"><span class="task-prop" style="font-size:11px;">${esc(t.property)}${t.sublocation?' / '+esc(t.sublocation):''}</span> ${pIcon} ${esc(t.desc)} ${getFitHint(t.desc)}${assignedBadge} ${t.time?`<span class="task-time" style="font-size:10px;"> @ ${fmt12(t.time)}</span>`:''} ${t.duration?`<span style="font-size:10px;color:var(--text3)"> ~${t.duration}</span>`:''}</label></div>`;
       });
     });
     el.innerHTML=html;
@@ -2329,39 +2391,129 @@ function generateLists(){
 }
 
 function buildList(name,ids,greeting){
-  if(!ids.length)return`Hi ${name},\n\nNo tasks assigned for this day.\n\nThank you!!`;
+  const noTasks={text:`Hi ${name},\n\nNo tasks assigned for this day.\n\nThank you!!`,html:`<span class="output-line">Hi ${name},\n\nNo tasks assigned for this day.\n\nThank you!!</span>`};
+  if(!ids.length)return noTasks;
   const items=ids.map(id=>tasks.find(t=>t.id==id)).filter(Boolean);
   items.sort((a,b)=>{if(a.time&&b.time)return a.time.localeCompare(b.time);if(a.time)return -1;if(b.time)return 1;const co={plymouth:0,ferndale:1,westbloom:2,outer:3};return(co[a.cluster]??9)-(co[b.cluster]??9);});
   const grouped={};items.forEach(t=>{if(!grouped[t.property])grouped[t.property]=[];grouped[t.property].push(t);});
-  let out=`Hi ${name},\n\n${greeting}\n`;
+  let text=`Hi ${name},\n\n${greeting}\n`;
+  let html=`<span class="output-line">Hi ${name},\n\n${esc(greeting)}\n</span>`;
   Object.entries(grouped).forEach(([prop,pitems])=>{
-    out+=`\n${prop}:\n`;
+    text+=`\n${prop}:\n`;
+    html+=`<span class="output-line">\n${esc(prop)}:\n</span>`;
     const subs={};pitems.forEach(t=>{const k=t.sublocation||'__none__';if(!subs[k])subs[k]=[];subs[k].push(t);});
     Object.entries(subs).forEach(([sub,sitems])=>{
-      if(sub!=='__none__')out+=`  - ${sub}:\n`;
+      if(sub!=='__none__'){text+=`  - ${sub}:\n`;html+=`<span class="output-line">  - ${esc(sub)}:\n</span>`;}
       sitems.forEach(t=>{
         const tp=t.time?`At ${fmt12(t.time)} `:'';
-        const ind=sub!=='__none__'?'    o ':'  - ';
-        out+=`${ind}${tp}${t.desc}\n`;
-        if(t.notes)t.notes.split('\n').forEach(l=>{if(l.trim())out+=`       ➤ ${l.trim()}\n`;});
+        const ind='  ➤ ';
+        text+=`${ind}${tp}${t.desc}\n`;
+        html+=`<span class="output-line">${esc(ind+tp+t.desc)}\n</span>`;
+        if(t.notes)t.notes.split('\n').forEach(l=>{if(l.trim()){text+=`       ➤ ${l.trim()}\n`;html+=`<span class="output-line">       ➤ ${esc(l.trim())}\n</span>`;}});
+        // Photos
+        const photos=(t.photos||[]).filter(s=>typeof s==='string'&&s.startsWith('http'));
+        if(photos.length){
+          text+=`       📷 ${photos.length} photo(s) attached\n`;
+          html+=`<div class="output-photos">${photos.map((src,i)=>`<img class="output-photo" src="${src}" onclick="openLB(${JSON.stringify(photos)},${i})" title="Photo ${i+1}" />`).join('')}</div>`;
+        }
       });
     });
   });
-  return out+`\nThank you!!`;
+  text+=`\nThank you!!`;
+  html+=`<span class="output-line">\nThank you!!</span>`;
+  return {text, html};
 }
 
-function switchOutput(tech){document.getElementById('output-text').textContent=genOutputs[tech]||'(no tasks assigned)';document.getElementById('pill-dan').className='tab-pill'+(tech==='dan'?' active dan':'');document.getElementById('pill-skender').className='tab-pill'+(tech==='skender'?' active skender':'');}
-function copyOutput(){navigator.clipboard.writeText(document.getElementById('output-text').textContent).then(()=>toast('Copied ✓'));}
+function switchOutput(tech){
+  const out=genOutputs[tech];
+  const el=document.getElementById('output-text');
+  if(!out||typeof out==='string'){el.innerHTML=`<span class="output-line">${esc(out||'(no tasks assigned)')}</span>`;}
+  else{el.innerHTML=out.html||`<span class="output-line">${esc(out.text||'')}</span>`;}
+  document.getElementById('pill-dan').className='tab-pill'+(tech==='dan'?' active dan':'');
+  document.getElementById('pill-skender').className='tab-pill'+(tech==='skender'?' active skender':'');
+}
+function getOutputText(tech){const out=genOutputs[tech];if(!out)return'(no tasks assigned)';return typeof out==='string'?out:out.text||'';}
+function copyOutput(){navigator.clipboard.writeText(getOutputText(document.getElementById('pill-dan').classList.contains('active')?'dan':'skender')).then(()=>toast('Copied ✓'));}
+function openOutlookEmail(tech){
+  const out=genOutputs[tech];
+  const techName=tech==='dan'?'Dan':'Skender';
+  const techColor=tech==='dan'?'#2d5a9e':'#c9a96e';
+  const dateVal=document.getElementById('gen-date').value;
+  const dateLabel=dateVal?fmtDateFull(dateVal):'Tomorrow';
+  const subject=`Daily Task List \u2014 ${techName} \u2014 ${dateLabel}`;
+  const plainText=getOutputText(tech);
+
+  // Build rich HTML email body with embedded images
+  let emailHTML='';
+  if(out&&out.html){
+    // Convert output-line spans to paragraphs and embed img tags properly
+    emailHTML=out.html
+      .replace(/<span class="output-line">/g,'')
+      .replace(/<\/span>/g,'')
+      .replace(/<div class="output-photos">/g,'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 16px 20px;padding-top:8px;border-top:1px solid #eee;">')
+      .replace(/<img class="output-photo"/g,'<img width="288" height="288" style="width:288px;height:288px;max-width:288px;max-height:288px;object-fit:cover;border-radius:4px;border:1px solid #dde1e9;"')
+      .replace(/onclick="[^"]*"/g,'')
+      .replace(/\n/g,'<br>');
+  } else {
+    emailHTML=plainText.replace(/\n/g,'<br>').replace(/  /g,'&nbsp;&nbsp;');
+  }
+
+  const fullHTML=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${subject}</title>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;margin:0;padding:24px;}
+  .email-card{background:#fff;border-radius:12px;padding:32px;max-width:680px;margin:0 auto;box-shadow:0 4px 16px rgba(0,0,0,.08);}
+  .email-header{border-bottom:3px solid ${techColor};padding-bottom:14px;margin-bottom:24px;}
+  .email-title{font-size:20px;font-weight:700;color:${techColor};margin:0 0 4px;}
+  .email-date{font-size:13px;color:#6b7280;}
+  .email-body{font-family:'Courier New',monospace;font-size:13px;line-height:1.9;color:#111827;white-space:pre-wrap;}
+  .email-footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;}
+  .copy-btn{display:inline-block;margin:0 6px 16px 0;padding:9px 18px;background:${techColor};color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:sans-serif;}
+  .copy-btn:hover{opacity:.88;}
+  .mailto-btn{display:inline-block;margin:0 6px 16px 0;padding:9px 18px;background:#fff;color:${techColor};border:2px solid ${techColor};border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:sans-serif;text-decoration:none;}
+  .instructions{background:#f0f2f5;border-radius:8px;padding:12px 16px;font-size:12px;color:#4b5563;margin-bottom:20px;font-family:sans-serif;}
+  img{width:288px !important;height:288px !important;max-width:288px !important;max-height:288px !important;border-radius:4px;border:1px solid #dde1e9;object-fit:cover;}
+</style></head><body>
+<div class="email-card">
+  <div class="instructions">
+    <strong>To send in Outlook:</strong>&nbsp; 
+    Click <em>Open in Mail App</em> for a plain-text email, <strong>or</strong> click <em>Copy HTML Body</em> then in Outlook choose <em>New Email → Paste</em> to get the version with photos.
+  </div>
+  <button class="copy-btn" onclick="
+    const range=document.createRange();
+    range.selectNode(document.getElementById('email-content'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    this.textContent='Copied! Now paste into Outlook ✓';
+    setTimeout(()=>this.textContent='📋 Copy HTML Body',2000);
+  ">📋 Copy HTML Body</button>
+  <a class="mailto-btn" href="mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(plainText)}">✉️ Open in Mail App</a>
+  <div id="email-content">
+    <div class="email-body">${emailHTML}</div>
+  </div>
+</div>
+</body></html>`;
+
+  const w=window.open('','_blank','width=780,height=700,scrollbars=yes');
+  w.document.write(fullHTML);
+  w.document.close();
+}
 
 // ══════════════════════════════════════════════════════════════
 // PDF EXPORT
 // ══════════════════════════════════════════════════════════════
 function exportPDF(){
-  const text=document.getElementById('output-text').textContent;
-  const tech=document.getElementById('pill-dan').classList.contains('active')?'Dan':'Skender';
+  const tech=document.getElementById('pill-dan').classList.contains('active')?'dan':'skender';
+  const text=getOutputText(tech);
+  const techName=tech==='dan'?'Dan':'Skender';
   const dateVal=document.getElementById('gen-date').value;
   const dateStr=dateVal?fmtDateFull(dateVal):new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  printDoc(`Daily List — ${tech} — ${dateStr}`, `<pre style="font-family:monospace;font-size:13px;line-height:1.8;white-space:pre-wrap;">${text.replace(/</g,'&lt;')}</pre>`);
+  // Include photos in PDF
+  const out=genOutputs[tech];
+  const htmlContent=out&&out.html?`<div style="font-family:monospace;font-size:13px;line-height:1.8;">${out.html.replace(/class="output-line"/g,'style="white-space:pre-wrap;display:block;"').replace(/class="output-photos"/g,'style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px 18px;"').replace(/class="output-photo"/g,'style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ccc;"')}</div>`:`<pre style="font-family:monospace;font-size:13px;line-height:1.8;white-space:pre-wrap;">${text.replace(/</g,'&lt;')}</pre>`;
+  printDoc(`Daily List — ${techName} — ${dateStr}`, htmlContent);
 }
 
 function exportHistoryPDF(){
@@ -2421,7 +2573,7 @@ function showPanel(name,el){
   if(el)el.classList.add('active');
   if(name==='generate')renderAssignPanels();
   if(name==='history')renderHistory();
-  if(name==='dashboard')renderDashboard();
+  if(name==='dashboard'){renderDashboard();initCalendars();}
   if(name==='recurring')renderRecurring();
   if(name==='templates')renderTemplates();
   if(name==='map')loadLeafletAndRender();
@@ -2674,7 +2826,177 @@ function fmt12(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return`${h%
 function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}/${day}/${y}`;}
 function fmtDateFull(d){if(!d)return'Tomorrow';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});}
 
-// ── Leaflet is loaded from <head> — just call renderMap directly ──
+
+// ══════════════════════════════════════════════════════════════
+// TECH CALENDARS
+// ══════════════════════════════════════════════════════════════
+// calState and calEntries declared earlier
+
+function loadCalEntries() {
+  try { const d = JSON.parse(localStorage.getItem('fhmc_cal_v1') || '{}'); calEntries.dan = d.dan || {}; calEntries.skender = d.skender || {}; } catch(e) {}
+}
+function saveCalEntries() {
+  localStorage.setItem('fhmc_cal_v1', JSON.stringify(calEntries));
+}
+
+function calNav(tech, dir) {
+  const s = calState[tech];
+  s.month += dir;
+  if(s.month > 11) { s.month = 0; s.year++; }
+  if(s.month < 0)  { s.month = 11; s.year--; }
+  renderCal(tech);
+}
+
+function renderCal(tech) {
+  try {
+    var s = calState[tech];
+    var year = s.year, month = s.month, selected = s.selected;
+    var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var labelEl = document.getElementById('cal-label-' + tech);
+    if(labelEl) labelEl.textContent = monthNames[month] + ' ' + year;
+
+    var now = new Date();
+    var ty = now.getFullYear(), tm = now.getMonth(), td = now.getDate();
+    var calTodayStr = ty + '-' + (String(tm+1).padStart(2,'0')) + '-' + (String(td).padStart(2,'0'));
+    var firstDOW = new Date(year, month, 1).getDay();
+    var totalDays = new Date(year, month+1, 0).getDate();
+    var entries = calEntries[tech] || {};
+
+    var monthPrefix = year + '-' + String(month+1).padStart(2,'0');
+    var techTaskDays = {};
+    tasks.forEach(function(t) {
+      if(t.assignedTo===tech && t.date && t.date.slice(0,7)===monthPrefix) techTaskDays[t.date]=1;
+    });
+
+    // Build flat grid: leading nulls + days + trailing nulls
+    var cells = [];
+    for(var i=0;i<firstDOW;i++) cells.push(null);
+    for(var d=1;d<=totalDays;d++) cells.push(d);
+    while(cells.length%7!==0) cells.push(null);
+
+    var rows = cells.length/7;
+    var html = '<table style="width:100%;border-collapse:collapse;">';
+    html += '<thead><tr>';
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function(n){
+      html += '<th style="text-align:center;padding:5px 2px;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;">' + n + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    for(var r=0;r<rows;r++) {
+      html += '<tr>';
+      for(var c=0;c<7;c++) {
+        var dayNum = cells[r*7+c];
+        if(dayNum===null) {
+          html += '<td style="padding:5px 2px;"></td>';
+        } else {
+          var mo = String(month+1).padStart(2,'0');
+          var da = String(dayNum).padStart(2,'0');
+          var ds = year+'-'+mo+'-'+da;
+          var isToday = (ds===calTodayStr);
+          var isSel = (ds===selected);
+          var hasDot = !!(entries[ds]&&entries[ds].length) || !!techTaskDays[ds];
+          var bg = isToday ? '#1e3a5f' : (isSel ? '#e3eaf3' : 'transparent');
+          var color = isToday ? '#fff' : (hasDot ? '#1e3a5f' : '#111827');
+          var fw = (isToday||hasDot) ? '700' : '400';
+          var border = isSel && !isToday ? '2px solid #1e3a5f' : '2px solid transparent';
+          var dot = hasDot && !isToday ? '<div style="width:4px;height:4px;background:#1e3a5f;border-radius:50%;margin:1px auto 0;"></div>' : '';
+          html += '<td style="text-align:center;padding:3px 1px;cursor:pointer;border-radius:6px;background:'+bg+';color:'+color+';font-weight:'+fw+';border:'+border+';font-size:12px;" onclick="calSelectDay(\''+tech+'\',\''+ds+'\')">'+dayNum+dot+'</td>';
+        }
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+
+    var calEl = document.getElementById('cal-'+tech);
+    if(calEl) calEl.innerHTML = html;
+    renderCalEntries(tech);
+  } catch(err) {
+    console.error('renderCal error:', err);
+    var calEl = document.getElementById('cal-'+tech);
+    if(calEl) calEl.innerHTML = '<div style="color:red;font-size:11px;">Calendar error: '+err.message+'</div>';
+  }
+}
+
+function calSelectDay(tech, dateStr) {
+  calState[tech].selected = calState[tech].selected === dateStr ? null : dateStr;
+  renderCal(tech);
+}
+
+function renderCalEntries(tech) {
+  const s = calState[tech];
+  const el = document.getElementById(`cal-${tech}-entries`);
+  if(!el) return;
+  const { year, month, selected } = s;
+  const entries = calEntries[tech] || {};
+
+  // Show entries for selected date, or all entries for the month
+  let html = '';
+  if(selected) {
+    const dayEntries = entries[selected] || [];
+    // Also include tasks assigned to this tech on this day
+    const techTasks = tasks.filter(t => t.assignedTo===tech && t.date===selected);
+    if(!dayEntries.length && !techTasks.length) {
+      html = `<div style="font-size:11px;color:var(--text3);font-style:italic;padding:4px;">No entries for ${selected}.</div>`;
+      html += `<button class="btn btn-ghost btn-sm cal-add-btn" onclick="calAddEntry('${tech}','${selected}')">+ Add Note for This Day</button>`;
+    } else {
+      if(techTasks.length) {
+        techTasks.forEach(t=>{
+          html+=`<div class="cal-entry"><div class="cal-entry-date">${selected} · assigned task</div><div class="cal-entry-text"><span class="cal-entry-prop">${esc(t.property)}</span>${esc(t.desc)}</div></div>`;
+        });
+      }
+      dayEntries.forEach((e,i)=>{
+        html+=`<div class="cal-entry"><div class="cal-entry-date">${selected}</div><div class="cal-entry-text">${e.prop?`<span class="cal-entry-prop">${esc(e.prop)}</span>`:''}${esc(e.text)}</div><button class="btn btn-danger" style="padding:2px 6px;font-size:9px;margin-top:4px;" onclick="calDeleteEntry('${tech}','${selected}',${i})">✕ Remove</button></div>`;
+      });
+      html += `<button class="btn btn-ghost btn-sm cal-add-btn" onclick="calAddEntry('${tech}','${selected}')">+ Add Note</button>`;
+    }
+  } else {
+    // Show all month entries
+    const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+    const monthTaskDays = {};
+    tasks.filter(t=>t.assignedTo===tech&&t.date&&t.date.startsWith(prefix)).forEach(t=>{
+      if(!monthTaskDays[t.date])monthTaskDays[t.date]=[];
+      monthTaskDays[t.date].push(t);
+    });
+    const allDays = [...new Set([...Object.keys(entries).filter(d=>d.startsWith(prefix)),...Object.keys(monthTaskDays)])].sort();
+    if(!allDays.length) {
+      html = `<div style="font-size:11px;color:var(--text3);font-style:italic;padding:4px;">No entries this month. Click a date to add notes.</div>`;
+    } else {
+      allDays.forEach(d=>{
+        const de=entries[d]||[];const tt=monthTaskDays[d]||[];
+        html+=`<div class="cal-entry" onclick="calSelectDay('${tech}','${d}')" style="cursor:pointer;"><div class="cal-entry-date">${d} · ${(de.length+tt.length)} item(s)</div><div class="cal-entry-text" style="color:var(--text2);">${tt.slice(0,1).map(t=>`<span class="cal-entry-prop">${esc(t.property)}</span>${esc(t.desc.slice(0,40))}`).join('')}${de.slice(0,1).map(e=>esc(e.text.slice(0,40))).join('')}${(de.length+tt.length)>1?' …':''}</div></div>`;
+      });
+    }
+  }
+  el.innerHTML = html;
+}
+
+function calAddEntry(tech, dateStr) {
+  const text = prompt(`Add a note for ${tech==='dan'?'Dan':'Skender'} on ${dateStr}:\n(e.g. "At DAI — boiler repair")`, '');
+  if(!text||!text.trim()) return;
+  const prop = prompt('Property code (optional, e.g. DAI):', '') || '';
+  if(!calEntries[tech][dateStr]) calEntries[tech][dateStr]=[];
+  calEntries[tech][dateStr].push({text:text.trim(),prop:prop.trim().toUpperCase()});
+  saveCalEntries();
+  renderCal(tech);
+  toast('Calendar note added ✓');
+}
+
+function calDeleteEntry(tech, dateStr, idx) {
+  if(!calEntries[tech][dateStr]) return;
+  calEntries[tech][dateStr].splice(idx,1);
+  if(!calEntries[tech][dateStr].length) delete calEntries[tech][dateStr];
+  saveCalEntries();
+  renderCal(tech);
+  toast('Entry removed ✓');
+}
+
+function initCalendars() {
+  loadCalEntries();
+  renderCal('dan');
+  renderCal('skender');
+}
+
+
 function loadLeafletAndRender(){
   renderMap();
 }
