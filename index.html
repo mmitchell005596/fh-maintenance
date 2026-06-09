@@ -2446,13 +2446,23 @@ function openOutlookEmail(tech){
   // Build rich HTML email body with embedded images
   let emailHTML='';
   if(out&&out.html){
-    // Convert output-line spans to paragraphs and embed img tags properly
-    emailHTML=out.html
+    // Strip onclick attrs first
+    const strippedHTML = out.html.replace(/onclick="[^"]*"/g,'').replace(/onclick='[^']*'/g,'');
+    // Build email HTML — use <br> and table spacers instead of CSS margins (Outlook ignores CSS spacing)
+    // Replace photo divs with a unique marker so we can close them precisely
+    const markedHTML = strippedHTML
+      .replace(/<div class="output-photos">([\s\S]*?)<\/div>/g, '##PHOTOSSTART##$1##PHOTOSEND##');
+    emailHTML=markedHTML
       .replace(/<span class="output-line">/g,'')
       .replace(/<\/span>/g,'')
-      .replace(/<div class="output-photos">/g,'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 16px 20px;padding-top:8px;border-top:1px solid #eee;">')
-      .replace(/<img class="output-photo"/g,'<img width="288" height="288" style="width:288px;height:288px;max-width:288px;max-height:288px;object-fit:cover;border-radius:4px;border:1px solid #dde1e9;"')
-      .replace(/onclick="[^"]*"/g,'')
+      // Replace photo block markers with table markup + br spacers
+      .replace(/##PHOTOSSTART##/g,
+        '<br><br><table cellpadding="8" cellspacing="8" border="0"><tr>')
+      .replace(/##PHOTOSEND##/g,
+        '</tr></table><br><br>')
+      // Each image: wrap in a <td>
+      .replace(/<img class="output-photo"([^>]*)>/g,
+        '<td valign="top"><img width="288" height="288" $1 style="display:block;border-radius:4px;border:1px solid #dde1e9;"></td>')
       .replace(/\n/g,'<br>');
   } else {
     emailHTML=plainText.replace(/\n/g,'<br>').replace(/  /g,'&nbsp;&nbsp;');
@@ -2466,7 +2476,7 @@ function openOutlookEmail(tech){
   .email-header{border-bottom:3px solid ${techColor};padding-bottom:14px;margin-bottom:24px;}
   .email-title{font-size:20px;font-weight:700;color:${techColor};margin:0 0 4px;}
   .email-date{font-size:13px;color:#6b7280;}
-  .email-body{font-family:'Courier New',monospace;font-size:13px;line-height:1.9;color:#111827;white-space:pre-wrap;}
+  .email-body{font-family:'Courier New',monospace;font-size:13px;line-height:3.0;color:#111827;white-space:pre-wrap;}
   .email-footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;}
   .copy-btn{display:inline-block;margin:0 6px 16px 0;padding:9px 18px;background:${techColor};color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:sans-serif;}
   .copy-btn:hover{opacity:.88;}
