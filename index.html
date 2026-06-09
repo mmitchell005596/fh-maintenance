@@ -785,9 +785,7 @@ select option{background:var(--surface);}
         <button class="tab-pill skender" id="pill-skender" onclick="switchOutput(&#39;skender&#39;)">Skender</button>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-secondary btn-sm" onclick="copyOutput()">📋 Copy</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportPDF()">📄 Export PDF</button>
-        <button class="btn btn-ghost btn-sm" onclick="openOutlookEmail(document.getElementById('pill-dan').classList.contains('active')?'dan':'skender')" title="Open as new email in your default mail app (Outlook)">✉️ Open in Outlook</button>
+        <button class="btn btn-primary btn-sm" onclick="openOutlookEmail(document.getElementById('pill-dan').classList.contains('active')?'dan':'skender')">✉️ Send via Outlook</button>
       </div>
     </div>
     <div class="output-area" id="output-text"></div>
@@ -2400,7 +2398,7 @@ function buildList(name,ids,greeting){
   let html=`<span class="output-line">Hi ${name},\n\n${esc(greeting)}\n</span>`;
   Object.entries(grouped).forEach(([prop,pitems])=>{
     text+=`\n${prop}:\n`;
-    html+=`<span class="output-line">\n${esc(prop)}:\n</span>`;
+    html+=`<span class="output-line">\n<strong><u>${esc(prop)}</u></strong>:\n</span>`;
     const subs={};pitems.forEach(t=>{const k=t.sublocation||'__none__';if(!subs[k])subs[k]=[];subs[k].push(t);});
     Object.entries(subs).forEach(([sub,sitems])=>{
       if(sub!=='__none__'){text+=`  - ${sub}:\n`;html+=`<span class="output-line">  - ${esc(sub)}:\n</span>`;}
@@ -2486,8 +2484,8 @@ function openOutlookEmail(tech){
 </style></head><body>
 <div class="email-card">
   <div class="instructions">
-    <strong>To send in Outlook:</strong>&nbsp; 
-    Click <em>Open in Mail App</em> for a plain-text email, <strong>or</strong> click <em>Copy HTML Body</em> then in Outlook choose <em>New Email → Paste</em> to get the version with photos.
+    <strong>⭐ With photos:</strong> Click <em>Copy HTML Body</em>, then open Outlook → New Email → Paste.<br><br>
+    <strong>📝 Text only (no photos):</strong> Click <em>Open in Mail App</em> — this opens a plain-text email automatically but photos cannot be included this way.
   </div>
   <button class="copy-btn" onclick="
     const range=document.createRange();
@@ -2496,10 +2494,10 @@ function openOutlookEmail(tech){
     window.getSelection().addRange(range);
     document.execCommand('copy');
     window.getSelection().removeAllRanges();
-    this.textContent='Copied! Now paste into Outlook ✓';
-    setTimeout(()=>this.textContent='📋 Copy HTML Body',2000);
-  ">📋 Copy HTML Body</button>
-  <a class="mailto-btn" href="mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(plainText)}">✉️ Open in Mail App</a>
+    this.textContent='✓ Copied! Now open Outlook → New Email → Paste';
+    setTimeout(()=>this.textContent='📋 Copy HTML Body (includes photos)',2000);
+  ">📋 Copy HTML Body (includes photos)</button>
+  <a class="mailto-btn" href="mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(plainText)}">✉️ Open in Mail App (text only)</a>
   <div id="email-content">
     <div class="email-body">${emailHTML}</div>
   </div>
